@@ -1,21 +1,76 @@
 <template>
-  <div class="card-layout">
+  <div class="card-layout" :class="classObj">
     <div class="circle-icon">
-      <img src="src/assets/svg/ic_plan.svg" alt="">
+      <img :src="imgSrc" alt="">
     </div>
-    <span class="text">{{ text }}</span>
+    <span class="text">{{ showText }}</span>
     <span class="count">{{ count }}</span>
-
   </div>
 </template>
 <script>
+export const TYPE_TODAY = 1
+export const TYPE_TODO = 2
+export const TYPE_ALL = 3
+
 export default {
+  props: {
+    cardType: {
+      type: Number,
+      default: TYPE_TODAY
+    },
+    count: {
+      type: Number,
+      default: 0
+    },
+    isSelected: {
+      type: Boolean,
+      default: false,
+    }
+  },
   name: "CardItem",
   data() {
     return {
       type: 1,
-      count: 2,
-      text: '今天'
+    }
+  },
+  computed: {
+    imgSrc() {
+      let iconName
+      switch (this.cardType) {
+        case TYPE_TODO:
+          iconName = 'ic_plan'
+          break
+        case TYPE_ALL:
+          iconName = 'ic_all'
+          break
+        case TYPE_TODAY:
+        default:
+          iconName = 'ic_today'
+          break
+      }
+      return `src/assets/svg/${ iconName + (this.isSelected ? '_selected' : '') }.svg`
+    },
+
+    showText() {
+      switch (this.cardType) {
+        case TYPE_TODO:
+          return '计划'
+        case TYPE_ALL:
+          return '全部'
+        case TYPE_TODAY:
+        default:
+          return '今天'
+      }
+    },
+
+    classObj() {
+      return {
+        selected: this.isSelected,
+        unselected: !this.isSelected,
+        today: this.cardType === TYPE_TODAY,
+        plan: this.cardType === TYPE_TODO,
+        all: this.cardType === TYPE_ALL,
+      }
     }
   }
 }
@@ -26,6 +81,7 @@ export default {
   border-radius: 12px;
   background-color: #cbcbcb;
   position: relative;
+  color: #4c4c4c;
 
   .circle-icon {
     display: flex;
@@ -34,7 +90,6 @@ export default {
     border-radius: 50%;
     width: 24px;
     height: 24px;
-    background-color: red;
 
     img {
       width: 16px;
@@ -42,19 +97,60 @@ export default {
     }
   }
 
+  .circle-icon.today {
+    background-color: var(--todo-blue);
+  }
+
   .text {
     font-size: 14px;
-    color: #4c4c4c;
+    margin-top: 2px;
+    color: inherit;
     font-weight: normal;
   }
 
   .count {
     font-size: 16px;
-    color: black;
+    color: inherit;
     font-weight: bold;
     position: absolute;
-    right: 8px;
+    right: 12px;
     top: 8px;
   }
+}
+
+
+.card-layout.selected {
+  color: white;
+  .circle-icon {
+    background-color: white;
+  }
+}
+
+.card-layout.today.unselected .circle-icon {
+  background-color: var(--todo-blue);
+}
+
+.card-layout.plan.unselected .circle-icon {
+  background-color: var(--todo-red);
+}
+
+.card-layout.all.unselected .circle-icon {
+  background-color: var(--todo-gray);
+}
+
+.card-layout.selected.today {
+  background-color: var(--todo-blue);
+}
+
+.card-layout.selected.plan {
+  background-color: var(--todo-red);
+}
+
+.card-layout.selected.all {
+  background-color: var(--todo-gray);
+}
+
+.card-layout:hover {
+  background-color: #b7b7b7;
 }
 </style>
