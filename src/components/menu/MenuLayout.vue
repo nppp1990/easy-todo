@@ -9,15 +9,21 @@
     </div>
     <card-item class="all-card" :card-type="3" :is-selected="currentCard=== 3"
                @click="onClickCard(3)" />
+    <div class="type-layout">
+      <h3>我的列表</h3>
+      <type-item/>
+    </div>
   </div>
 </template>
 <script>
 import CardItem from "@/components/menu/CardItem.vue";
+import TypeItem from "@/components/menu/TypeItem.vue";
 
 export default {
   name: "MenuLayout",
   components: {
-    CardItem
+    CardItem,
+    TypeItem,
   },
   data() {
     return {
@@ -54,5 +60,15 @@ input {
 .all-card {
   margin-top: 8px;
   width: 100%;
+}
+
+.type-layout {
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  h3 {
+    font-size: 12px;
+    color: var(--todo-text-gray2);
+  }
 }
 </style>

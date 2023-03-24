@@ -2,12 +2,15 @@
   <div class="card-layout" :class="classObj">
     <div class="circle-icon">
       <img :src="imgSrc" alt="">
+      <span v-if="cardType===1" class="day">{{ currentDay }}</span>
     </div>
     <span class="text">{{ showText }}</span>
     <span class="count">{{ count }}</span>
   </div>
 </template>
 <script>
+import dayjs from "dayjs";
+
 export const TYPE_TODAY = 1
 export const TYPE_TODO = 2
 export const TYPE_ALL = 3
@@ -28,9 +31,12 @@ export default {
     }
   },
   name: "CardItem",
+  created() {
+    this.currentDay = dayjs().format('D')
+  },
   data() {
     return {
-      type: 1,
+      currentDay: 1,
     }
   },
   computed: {
@@ -90,10 +96,21 @@ export default {
     border-radius: 50%;
     width: 24px;
     height: 24px;
+    position: relative;
 
     img {
       width: 16px;
       height: 16px;
+    }
+
+    .day {
+      position: absolute;
+      font-size: 12px;
+      font-weight: bold;
+      transform: scale(0.5);
+      text-align: center;
+      padding-top: 7px;
+      color: white;
     }
   }
 
@@ -121,8 +138,13 @@ export default {
 
 .card-layout.selected {
   color: white;
+
   .circle-icon {
     background-color: white;
+  }
+
+  .day {
+    color: var(--todo-blue);
   }
 }
 
