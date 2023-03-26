@@ -9,21 +9,22 @@
     </div>
     <card-item class="all-card" :card-type="3" :is-selected="currentCard=== 3"
                @click="onClickCard(3)" />
-    <div class="type-layout">
-      <h3>我的列表</h3>
-      <type-item/>
+    <type-list-layout/>
+    <div class="bottom-add bottom-divider">
+      <div class="add"></div>
+      <span>添加列表</span>
     </div>
   </div>
 </template>
 <script>
 import CardItem from "@/components/menu/CardItem.vue";
-import TypeItem from "@/components/menu/TypeItem.vue";
+import TypeListLayout from "@/components/menu/TypeListLayout.vue";
 
 export default {
   name: "MenuLayout",
   components: {
     CardItem,
-    TypeItem,
+    TypeListLayout,
   },
   data() {
     return {
@@ -62,13 +63,62 @@ input {
   width: 100%;
 }
 
-.type-layout {
-  padding: 16px 12px;
+.bottom-add {
   display: flex;
-  flex-direction: column;
-  h3 {
-    font-size: 12px;
-    color: var(--todo-text-gray2);
+  height: 30px;
+  width: 100%;
+  align-items: center;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+
+  span {
+    margin-left: 8px;
+    font-size: 14px;
+    color: var(--todo-black1);
+  }
+
+  .add {
+    margin-left: 8px;
+    border: 1px solid;
+    border-radius: 50%;
+    width: 14px;
+    height: 14px;
+    color: var(--todo-black1);
+  }
+
+  .add::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 8px;
+    height: 1px;
+    margin-left: -4px;
+    margin-top: -0.5px;
+    background-color: var(--todo-black1);
+  }
+
+  .add::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 1px;
+    height: 8px;
+    margin-left: -0.5px;
+    margin-top: -4px;
+    background-color: var(--todo-black1);
   }
 }
+
+.bottom-divider::before {
+  content:'';
+  position: absolute;
+  width: 100%;
+  height: 1px;
+  background-color: var(--divider-gray1);
+  top: 0;
+}
+
 </style>
