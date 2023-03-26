@@ -46,7 +46,7 @@ input {
 }
 
 .todo-card-layout {
-  margin-top: 8px;
+  margin-top: 18px;
   display: flex;
 
   .todo-item {

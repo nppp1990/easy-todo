@@ -1,5 +1,5 @@
 <template>
-  <div class="selected" draggable="true">
+  <div draggable="true">
     <div class="circle">
       <img src="src/assets/svg/ic_menu.svg" alt="">
     </div>
@@ -52,8 +52,6 @@ div {
     font-size: 12px;
     color: var(--todo-text-gray2);
   }
-
-
 }
 
 div.selected {
