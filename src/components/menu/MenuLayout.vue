@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="menu-layout">
     <input type="text" name="" id="" placeholder="搜索">
     <div class="todo-card-layout">
       <card-item class="todo-item item-left" :card-type="1" :is-selected="currentCard=== 1"
@@ -9,7 +9,7 @@
     </div>
     <card-item class="all-card" :card-type="3" :is-selected="currentCard=== 3"
                @click="onClickCard(3)" />
-    <type-list-layout/>
+    <type-list-layout />
     <div class="bottom-add bottom-divider">
       <div class="add"></div>
       <span>添加列表</span>
@@ -39,6 +39,11 @@ export default {
 }
 </script>
 <style scoped lang="scss">
+.menu-layout {
+  display: flex;
+  flex-direction: column;
+}
+
 input {
   width: 100%;
   height: 30px;
@@ -113,12 +118,11 @@ input {
 }
 
 .bottom-divider::before {
-  content:'';
+  content: '';
   position: absolute;
   width: 100%;
   height: 1px;
   background-color: var(--divider-gray1);
   top: 0;
 }
-
 </style>
