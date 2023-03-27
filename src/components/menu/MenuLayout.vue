@@ -1,6 +1,14 @@
 <template>
   <div class="menu-layout">
-    <input type="text" name="" id="" placeholder="搜索">
+    <!--  todo: 怎么做一个聚焦后、border变大的特效、并且保证内容位置不变  -->
+    <div class="input-wrapper">
+      <input type="text" name="" id="" placeholder="搜索" v-model="searchText">
+      <img src="src/assets/svg/ic_search.svg" alt="" class="input-search">
+      <div class="input-close-wrapper" v-show="searchText.length > 0" @click="clearSearch">
+        <img src="src/assets/svg/ic_search_close.svg" alt="" class="input-close">
+      </div>
+
+    </div>
     <div class="todo-card-layout">
       <card-item class="todo-item item-left" :card-type="1" :is-selected="currentCard=== 1"
                  @click="onClickCard(1)" />
@@ -29,11 +37,15 @@ export default {
   data() {
     return {
       currentCard: 1,
+      searchText:'',
     }
   },
   methods: {
     onClickCard(type) {
       this.currentCard = type
+    },
+    clearSearch() {
+      this.searchText = ''
     }
   }
 }
@@ -42,12 +54,58 @@ export default {
 .menu-layout {
   display: flex;
   flex-direction: column;
-}
 
-input {
-  width: 100%;
-  height: 30px;
-  display: block;
+  .input-wrapper {
+    position: relative;
+
+    input {
+      width: 100%;
+      height: 30px;
+      border: 1px solid #d2d2d2;
+      border-radius: 6px;
+      padding: 0 28px;
+      outline: none;
+      display: block;
+      background-color: #d7d7d7;
+      background-size: 12px 12px;
+      color: var(--todo-black1);
+    }
+
+    input:focus, :hover {
+      border-color: #74a2e2;
+    }
+
+    .input-search {
+      width: 12px;
+      height: 12px;
+      position: absolute;
+      top: 8px;
+      left: 8px;
+    }
+
+    .input-close-wrapper {
+      position: absolute;
+      top: 0;
+      right: 0;
+      height: 100%;
+      width: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      .input-close {
+        width: 12px;
+        height: 12px;
+      }
+    }
+
+
+  }
+
+
+  input::placeholder {
+    color: var(--todo-placeholder-color);
+  }
 }
 
 .todo-card-layout {
