@@ -1,0 +1,42 @@
+.el-dialog {
+  border-radius: 10px;
+
+  .el-dialog__header {
+    padding: 0;
+  }
+
+  .el-dialog__body {
+    padding: 10px;
+    color: black;
+
+    .dialog-layout {
+      padding: 10px 6px 2px;
+      background-color: white;
+
+      h4 {
+        font-weight: bold;
+        font-size: 12px;
+      }
+
+      .name-layout {
+        width: 100%;
+        margin-top: 20px;
+        display: flex;
+        span {
+          font-size: 12px;
+        }
+        input {
+          flex: 1;
+        }
+      }
+
+      .label-layout {
+
+      }
+    }
+
+
+  }
+
+
+}

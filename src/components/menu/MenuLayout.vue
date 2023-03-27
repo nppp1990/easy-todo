@@ -7,7 +7,6 @@
       <div class="input-close-wrapper" v-show="searchText.length > 0" @click="clearSearch">
         <img src="src/assets/svg/ic_search_close.svg" alt="" class="input-close">
       </div>
-
     </div>
     <div class="todo-card-layout">
       <card-item class="todo-item item-left" :card-type="1" :is-selected="currentCard=== 1"
@@ -20,24 +19,33 @@
     <type-list-layout />
     <div class="bottom-add bottom-divider">
       <div class="add"></div>
-      <span>添加列表</span>
+      <span @click="showCreateTypeDialog = true">添加列表</span>
     </div>
+    <el-dialog v-model="showCreateTypeDialog"
+               width="480px"
+               :show-close="false"
+               align-center>
+      <type-dialog-layout/>
+    </el-dialog>
   </div>
 </template>
 <script>
 import CardItem from "@/components/menu/CardItem.vue";
 import TypeListLayout from "@/components/menu/TypeListLayout.vue";
+import TypeDialogLayout from "@/components/menu/TypeDialogLayout.vue";
 
 export default {
   name: "MenuLayout",
   components: {
     CardItem,
     TypeListLayout,
+    TypeDialogLayout,
   },
   data() {
     return {
       currentCard: 1,
-      searchText:'',
+      searchText: '',
+      showCreateTypeDialog: false,
     }
   },
   methods: {
