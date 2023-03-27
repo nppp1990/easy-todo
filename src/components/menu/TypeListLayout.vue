@@ -32,6 +32,9 @@
 <script>
 import TypeItem from "@/components/menu/TypeItem.vue";
 
+// 这里和.menu-item-layout的高度保持同步
+const MENU_ITEM_HEIGHT = 36
+
 export default {
   name: "TypeListLayout",
   props: {
@@ -58,10 +61,11 @@ export default {
         // { color: 1, name: 'name4', count: 4, id: 10 },
         // { color: 1, name: 'name4', count: 4, id: 11 },
         // { color: 1, name: 'name4', count: 4, id: 12 },
-        // { color: 1, name: 'name4', count: 6, id: 12 },
-        // { color: 1, name: 'name4', count: 7, id: 12 },
-        // { color: 1, name: 'name4', count: 8, id: 12 },
-        // { color: 1, name: 'name4', count: 10, id: 12 },
+        // { color: 1, name: 'name4', count: 6, id: 13 },
+        // { color: 1, name: 'name4', count: 7, id: 14 },
+        // { color: 1, name: 'name4', count: 8, id: 15 },
+        // { color: 1, name: 'name4', count: 10, id: 22 },
+        // { color: 1, name: 'name4', count: 10, id: 32 },
       ],
       currentId: this.indexId,
       isSelected: true, // 要么是选中、失去焦点
@@ -99,10 +103,7 @@ export default {
     },
     onDragOver(event, item, index) {
       this.overIndex = index
-      let itemRef = this.$refs.items[index]
-      let rect = itemRef.getBoundingClientRect()
-      let offset = event.clientY - rect.top
-      let ratio = offset / rect.height
+      let ratio = event.offsetY / MENU_ITEM_HEIGHT
       if (ratio < 1 / 4) {
         this.overIndex = index - 1
       } else if (ratio <= 3 / 4) {
@@ -152,8 +153,7 @@ export default {
         this.isDraggingOut = true
         return
       }
-      if (clientY < this.menuRect.top - 20) {
-        // todo 20应该是根据item的高度计算
+      if (clientY < this.menuRect.top - MENU_ITEM_HEIGHT / 4) {
         this.overIndex = -2
         this.isDraggingOut = true
         return

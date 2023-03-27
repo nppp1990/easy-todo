@@ -13,7 +13,7 @@
   }
 
   .menu-item-layout {
-    height: 36px;
+    height: var(--todo-menu-height);
     width: 100%;
     display: flex;
     align-items: center;
