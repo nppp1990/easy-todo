@@ -22,10 +22,12 @@
       <span @click="showCreateTypeDialog = true">添加列表</span>
     </div>
     <el-dialog v-model="showCreateTypeDialog"
+               :close-on-click-modal="false"
                width="480px"
+               @closed="onDialogAnimationEnd"
                :show-close="false"
                align-center>
-      <type-dialog-layout @close="onDialogClosed" />
+      <type-dialog-layout @close="onDialogClosed" ref="dialogContent"/>
     </el-dialog>
   </div>
 </template>
@@ -62,6 +64,9 @@ export default {
       } else {
         console.log('----close dialog')
       }
+    },
+    onDialogAnimationEnd() {
+      this.$refs.dialogContent.reset()
     }
   }
 }

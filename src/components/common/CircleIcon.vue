@@ -1,6 +1,6 @@
 <template>
   <div :style="`background-color: ${color};`">
-    <img src="../../assets/svg/ic_type_white0.svg" alt="">
+    <img :src="`src/assets/svg/${svgName}.svg`" alt="">
   </div>
 </template>
 <script>
@@ -10,6 +10,10 @@ export default {
     color: {
       type: String,
       default: '#157efb'
+    },
+    svgName: {
+      type: String,
+      default: 'ic_type_white0'
     }
   }
 }
