@@ -20,18 +20,145 @@
 
       .name-layout {
         width: 100%;
+        height: 24px;
         margin-top: 20px;
         display: flex;
+        align-items: center;
+
         span {
           font-size: 12px;
         }
+
         input {
+          height: 100%;
           flex: 1;
+          border: 1px solid #d2d2d2;
+          border-radius: 4px;
+          padding: 0 4px;
+          margin-left: 8px;
         }
       }
 
       .label-layout {
+        margin-top: 8px;
+        display: flex;
+        height: 64px;
+        width: 100%;
 
+        .color-layout {
+          flex: 1;
+          display: flex;
+
+          span {
+            font-size: 12px;
+          }
+
+          .color-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 24px);
+            grid-template-rows: repeat(2, 28px);
+            margin-left: 8px;
+
+            .circle-color {
+              width: 16px;
+              height: 16px;
+              border-radius: 50%;
+              background-color: red;
+              position: relative;
+
+              .select-dot {
+                width: 6px;
+                height: 6px;
+                top: 8px;
+                left: 8px;
+                transform: translate(-3px, -3px);
+                border-radius: 50%;
+                background-color: white;
+              }
+            }
+          }
+        }
+
+        .divider {
+          background-color: var(--divider-gray1);
+          width: 1px;
+          height: 48px;
+        }
+
+        .icon-layout {
+          flex: 1;
+          display: flex;
+
+          span {
+            margin-left: 42px;
+            font-size: 12px;
+          }
+
+          .icon-selector {
+            margin-left: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #157efb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2px;
+
+            .icon {
+              width: 100%;
+              height: 100%;
+            }
+          }
+
+
+        }
+      }
+
+      .h-divider {
+        width: 100%;
+        height: 1px;
+        background-color: var(--divider-gray1);
+      }
+
+      .button-layout {
+        margin-top: 16px;
+        display: flex;
+        flex-direction: row-reverse;
+
+        button {
+          height: 20px;
+          width: 50px;
+          font-size: 12px;
+          border-radius: 6px;
+          border: none;
+          //box-shadow: 0 14px 56px -11px #1875FF;
+        }
+
+        .button-yes {
+          margin-left: 12px;
+          box-shadow: 0 0 0 1px var(--divider-gray1) inset;
+          background-color: transparent;
+          color: #c1c1c1;
+        }
+
+        .button-yes.able {
+          box-shadow: none;
+          background-color: rgba(33, 130, 248, 0.9);
+          color: white;
+        }
+
+        .button-yes.able:hover {
+          background-color: rgba(33, 130, 248, 1);
+        }
+
+        .button-no {
+          box-shadow: 1px 1px 0 var(--divider-gray1);
+        }
+
+        .button-no:hover {
+          background-color: #cccccc;
+        }
       }
     }
 
