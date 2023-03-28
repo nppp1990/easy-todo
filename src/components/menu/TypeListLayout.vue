@@ -11,6 +11,8 @@
       <TransitionGroup name="list">
         <div v-for="(item, index) in list" :key="item.id" :class="{'indicator-item': isShowIndicator(index)}" ref="items">
           <type-item :name="item.name" :count="item.count"
+                     :svg-name="`ic_type_white${item.svgIndex}`"
+                     :color="`${colorList[item.colorIndex]}`"
                      class="menu-item-layout" :class="{ 'item-selected': item.id === currentId}"
                      @click="onItemClicked(item)"
                      draggable="true"
@@ -31,6 +33,7 @@
 </template>
 <script>
 import TypeItem from "@/components/menu/TypeItem.vue";
+import { TYPE_COLOR_LIST } from "@/components/menu/TypeDialogLayout.vue";
 
 // 这里和.menu-item-layout的高度保持同步
 const MENU_ITEM_HEIGHT = 36
@@ -49,13 +52,13 @@ export default {
   data() {
     return {
       list: [
-        { color: 1, name: 'name1', count: 2, id: 1 },
-        { color: 2, name: 'name2', count: 0, id: 2 },
-        { color: 4, name: 'name3', count: 1, id: 3 },
-        { color: 1, name: 'name4', count: 4, id: 4 },
-        { color: 1, name: 'name5', count: 4, id: 5 },
-        { color: 1, name: 'name6', count: 4, id: 6 },
-        { color: 1, name: 'xxx', count: 4, id: 7 },
+        { colorIndex: 1, svgIndex: 0, name: 'name1', count: 2, id: 1 },
+        { colorIndex: 7, svgIndex: 1, name: 'name2', count: 0, id: 2 },
+        { colorIndex: 4, svgIndex: 1, name: 'name3', count: 1, id: 3 },
+        { colorIndex: 1, svgIndex: 2, name: 'name4', count: 4, id: 4 },
+        { colorIndex: 1, svgIndex: 2, name: 'name5', count: 4, id: 5 },
+        { colorIndex: 1, svgIndex: 12, name: 'name6', count: 4, id: 6 },
+        { colorIndex: 10, svgIndex: 22, name: 'xxx', count: 4, id: 7 },
         // { color: 1, name: 'name4', count: 4, id: 8 },
         // { color: 1, name: 'name4', count: 4, id: 9 },
         // { color: 1, name: 'name4', count: 4, id: 10 },
@@ -67,6 +70,7 @@ export default {
         // { color: 1, name: 'name4', count: 10, id: 22 },
         // { color: 1, name: 'name4', count: 10, id: 32 },
       ],
+      colorList: TYPE_COLOR_LIST,
       currentId: this.indexId,
       isSelected: true, // 要么是选中、失去焦点
 

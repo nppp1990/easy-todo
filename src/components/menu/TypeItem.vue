@@ -1,15 +1,18 @@
 <template>
   <div>
-    <div class="circle">
-      <img src="../../assets/svg/ic_type_white0.svg" alt="">
-    </div>
+    <circle-icon class="circle" :svg-name="svgName" :color="color" />
     <span class="name">{{ name }}</span>
     <span class="count">{{ count }}</span>
   </div>
 </template>
 <script>
+import CircleIcon from "@/components/common/CircleIcon.vue";
+
 export default {
   name: "TypeItem",
+  components: {
+    CircleIcon,
+  },
   props: {
     name: {
       type: String,
@@ -18,6 +21,14 @@ export default {
     count: {
       type: Number,
       default: 0
+    },
+    color: {
+      type: String,
+      required: true
+    },
+    svgName: {
+      type: String,
+      required: true
     }
   }
 }

@@ -9,24 +9,24 @@
       <div class="color-layout">
         <span>颜色：</span>
         <div class="color-grid">
-          <div v-for="i in typeIconSize" class="circle-color" :key="i" :style="`background-color: ${colorList[i - 1]}`"
-               @click="onClickColorItem(i)">
-            <div v-show="i === currentColorIndex" class="select-dot"></div>
+          <div v-for="i in colorList.length" class="circle-color" :key="i" :style="`background-color: ${colorList[i - 1]}`"
+               @click="onClickColorItem(i - 1)">
+            <div v-show="i - 1 === currentColorIndex" class="select-dot"></div>
           </div>
         </div>
       </div>
-      <div class="divider"></div>
+      <div class="divider" />
       <div class="icon-layout">
         <span>图标：</span>
         <el-popover placement="right" :width="274" trigger="click" :visible="showIconList">
           <template #reference>
             <div class="icon-selector" @click="showIconList = !showIconList">
-              <circle-icon :color="colorList[currentColorIndex - 1]" class="icon" :svg-name="`ic_type_white${currentIconIndex - 1}`" />
+              <circle-icon :color="colorList[currentColorIndex]" class="icon" :svg-name="`ic_type_white${currentIconIndex}`" />
             </div>
           </template>
           <div class="type-grid">
-            <div v-for="index in 70" :key="index" class="icon-wrapper" :class="{'unselected': currentIconIndex !== index}"
-                 @click="onClickIconItem(index)">
+            <div v-for="index in typeIconSize" :key="index" class="icon-wrapper" :class="{'unselected': currentIconIndex !== index - 1}"
+                 @click="onClickIconItem(index - 1)">
               <circle-icon class="icon" color="#e6e6e6" :svg-name="`ic_type_black${index - 1}`" />
             </div>
           </div>
@@ -48,35 +48,51 @@
 <script>
 import CircleIcon from "@/components/common/CircleIcon.vue";
 
-const DEFAULT_ICON_INDEX = 1
-const DEFAULT_COLOR_INDEX = 6
+const DEFAULT_ICON_INDEX = 0
+const DEFAULT_COLOR_INDEX = 5
+export const TYPE_COLOR_LIST = [
+  '#fc3d39',
+  '#fd9426',
+  '#fecb2f',
+  '#29c55e',
+  '#56abef',
+  '#157efb',
+  '#595ad3',
+  '#e8456c',
+  '#bf7ad9',
+  '#9c8565',
+  '#5b6770',
+  '#dba6a0',
+]
+const TYPE_ICON_SIZE = 78
 
 export default {
   name: "TypeDialogLayout",
   components: {
     CircleIcon,
   },
+  props: {
+    colorIndex: {
+      type: Number,
+      default: DEFAULT_COLOR_INDEX
+    },
+    iconIndex: {
+      type: Number,
+      default: DEFAULT_ICON_INDEX
+    },
+    name: {
+      type: String,
+      default: '',
+    }
+  },
   data() {
     return {
-      currentColorIndex: DEFAULT_COLOR_INDEX,
-      currentIconIndex: DEFAULT_ICON_INDEX,
+      currentColorIndex: this.colorIndex,
+      currentIconIndex: this.iconIndex,
+      typeName: this.name,
       showIconList: false,
-      colorList: [
-        '#fc3d39',
-        '#fd9426',
-        '#fecb2f',
-        '#29c55e',
-        '#56abef',
-        '#157efb',
-        '#595ad3',
-        '#e8456c',
-        '#bf7ad9',
-        '#9c8565',
-        '#5b6770',
-        '#dba6a0',
-      ],
-      typeName: '',
-      typeIconSize: 78
+      colorList: TYPE_COLOR_LIST,
+      typeIconSize: TYPE_ICON_SIZE
     }
   },
   methods: {
@@ -95,7 +111,7 @@ export default {
       this.$emit('close', {
         name: this.typeName,
         colorIndex: this.currentColorIndex,
-        color: this.colorList[this.currentColorIndex - 1],
+        color: this.colorList[this.currentColorIndex],
         svgIndex: this.currentIconIndex,
       })
     },

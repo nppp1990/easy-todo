@@ -24,18 +24,7 @@
     & > .circle {
       height: 24px;
       width: 24px;
-      border-radius: 50%;
-      background-color: var(--todo-type-color1);
-      text-align: center;
-      display: flex;
-      align-items: center;
       margin: 0 8px;
-
-      img {
-        width: 16px;
-        height: 16px;
-        margin: auto;
-      }
     }
 
     .name {
