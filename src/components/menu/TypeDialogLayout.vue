@@ -19,7 +19,7 @@
       <div class="icon-layout">
         <span>图标：</span>
         <div class="icon-selector">
-          <circle-icon color="#fecb2f" class="icon" />
+          <circle-icon :color="colorList[currentColorIndex - 1]" class="icon" />
         </div>
         <div></div>
       </div>
@@ -68,6 +68,8 @@ export default {
     onSubmit() {
       this.$emit('close', {
         name: this.typeName,
+        colorIndex: this.currentColorIndex,
+        color: this.colorList[this.currentColorIndex - 1]
       })
     },
     onClickColorItem(index) {

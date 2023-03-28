@@ -1,6 +1,6 @@
 <template>
   <div :style="`background-color: ${color};`">
-    <img src="src/assets/svg/ic_menu.svg" alt="">
+    <img src="../../assets/svg/ic_type_white0.svg" alt="">
   </div>
 </template>
 <script>
