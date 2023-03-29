@@ -16,7 +16,7 @@
     </div>
     <card-item class="all-card" :card-type="3" :is-selected="currentCard=== 3"
                @click="onClickCard(3)" />
-    <type-list-layout ref="typeList"/>
+    <type-list-layout ref="typeList" style="margin-top: 16px; margin-bottom: 30px; " />
     <div class="bottom-add bottom-divider">
       <div class="add"></div>
       <span @click="showCreateTypeDialog = true">添加列表</span>
@@ -127,10 +127,7 @@ export default {
         height: 12px;
       }
     }
-
-
   }
-
 
   input::placeholder {
     color: var(--todo-placeholder-color);
@@ -163,6 +160,8 @@ export default {
   position: absolute;
   bottom: 0;
   left: 0;
+  // 保证比menuList的大
+  z-index: 101;
 
   span {
     margin-left: 8px;

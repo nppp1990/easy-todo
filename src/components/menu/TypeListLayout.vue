@@ -59,7 +59,14 @@ export default {
         { colorIndex: 1, svgIndex: 2, name: 'name4', count: 4, id: 4 },
         { colorIndex: 1, svgIndex: 2, name: 'name5', count: 4, id: 5 },
         { colorIndex: 1, svgIndex: 12, name: 'name6', count: 4, id: 6 },
-        { colorIndex: 10, svgIndex: 22, name: 'xxx', count: 4, id: 7 },
+        { colorIndex: 10, svgIndex: 22, name: 'xxx1', count: 4, id: 7 },
+        { colorIndex: 10, svgIndex: 22, name: 'xxx2', count: 4, id: 8 },
+        { colorIndex: 10, svgIndex: 22, name: 'xxx3', count: 4, id: 9 },
+        { colorIndex: 10, svgIndex: 22, name: 'xxx4xx', count: 4, id: 10 },
+        { colorIndex: 10, svgIndex: 22, name: 'xxx43', count: 4, id: 11 },
+        { colorIndex: 10, svgIndex: 22, name: 'xxx42', count: 4, id: 12 },
+        { colorIndex: 10, svgIndex: 22, name: 'xxx41', count: 4, id: 13 },
+        { colorIndex: 10, svgIndex: 22, name: 'xxx45', count: 4, id: 14 },
       ],
       colorList: TYPE_COLOR_LIST,
       currentId: this.indexId,
@@ -83,7 +90,7 @@ export default {
   },
   mounted() {
     this.initMenuRect()
-    this.$store.commit(MUTATION_SET_INCREMENT_ID, 7)
+    this.$store.commit(MUTATION_SET_INCREMENT_ID, 100)
   },
   methods: {
     initMenuRect() {
@@ -187,7 +194,15 @@ export default {
 
     addType(item) {
       this.list.push(item)
-    }
+      this.$nextTick(() => {
+        this.currentId = item.id
+        const scrollList = this.$refs.listLayout
+        scrollList.scrollTo({
+          top: scrollList.scrollHeight,
+          behavior: 'smooth'
+        })
+      })
+    },
   }
 }
 </script>
