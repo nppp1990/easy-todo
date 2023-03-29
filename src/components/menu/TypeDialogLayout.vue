@@ -18,9 +18,9 @@
       <div class="divider" />
       <div class="icon-layout">
         <span>图标：</span>
-        <el-popover placement="right" :width="274" trigger="click" :visible="showIconList">
+        <el-popover  placement="right" :width="274" trigger="click" :visible="showIconList">
           <template #reference>
-            <div class="icon-selector" @click="showIconList = !showIconList">
+            <div class="icon-selector" @click="showIconList = !showIconList" v-click-outside="onClickOutside">
               <circle-icon :color="colorList[currentColorIndex]" class="icon" :svg-name="`ic_type_white${currentIconIndex}`" />
             </div>
           </template>
@@ -101,7 +101,9 @@ export default {
       this.currentIconIndex = DEFAULT_ICON_INDEX
       this.currentColorIndex = DEFAULT_COLOR_INDEX
     },
-
+    onClickOutside() {
+      this.showIconList = false
+    },
     onClickCancel() {
       this.showIconList = false
       this.$emit('close')
