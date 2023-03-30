@@ -20,6 +20,7 @@
         <span>图标：</span>
         <el-popover  placement="right" :width="274" trigger="click" :visible="showIconList">
           <template #reference>
+            <!--    这里clickoutside逻辑有bug，暂时把outside设置为这个按钮        -->
             <div class="icon-selector" @click="showIconList = !showIconList" v-click-outside="onClickOutside">
               <circle-icon :color="colorList[currentColorIndex]" class="icon" :svg-name="`ic_type_white${currentIconIndex}`" />
             </div>
@@ -101,6 +102,7 @@ export default {
       this.currentIconIndex = DEFAULT_ICON_INDEX
       this.currentColorIndex = DEFAULT_COLOR_INDEX
     },
+
     onClickOutside() {
       this.showIconList = false
     },

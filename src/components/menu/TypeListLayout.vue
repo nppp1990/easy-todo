@@ -21,7 +21,8 @@
                      @dragover.prevent="onDragOver($event, item, index)"
                      @dragenter.prevent="onDragEnter($event, item, index)"
                      @dragleave="onDragLeave($event, index)"
-                     @dragend="onDragEnd($event, index)" />
+                     @dragend="onDragEnd($event, index)"
+                     @contextmenu.stop.prevent="onMouseRightClick($event, item, index)" />
           <div class="indicator bottom-indicator">
             <div class="indicator-circle"></div>
             <div class="indicator-line"></div>
@@ -29,12 +30,15 @@
         </div>
       </TransitionGroup>
     </div>
+    <context-menu :menu-list="menuList" ref="contextMenu"
+                  @click-menu-item="onClickMenuItem" />
   </div>
 </template>
 <script>
 import TypeItem from "@/components/menu/TypeItem.vue";
 import { TYPE_COLOR_LIST } from "@/components/menu/TypeDialogLayout.vue";
 import { MUTATION_SET_INCREMENT_ID } from "@/store/modules/type";
+import ContextMenu from "@/components/common/ContextMenu.vue";
 
 // 这里和.menu-item-layout的高度保持同步
 const MENU_ITEM_HEIGHT = 36
@@ -49,6 +53,7 @@ export default {
   },
   components: {
     TypeItem,
+    ContextMenu,
   },
   data() {
     return {
@@ -71,8 +76,6 @@ export default {
       colorList: TYPE_COLOR_LIST,
       currentId: this.indexId,
       isSelected: true, // 要么是选中、失去焦点
-
-
       isDraggingOut: true,
       isDragging: false,
       overIndex: -2,
@@ -85,13 +88,32 @@ export default {
       },
       listLayout: {
         bottom: 0
-      }
+      },
+      menuList: [
+        { value: '显示列表信息' },
+        -1,
+        { value: '在新窗口中打开列表' },
+        -1,
+        {
+          value: '排序方式',
+          subMenu: [
+            '手动', '创建日期', '截止日期', '优先级', '标题'
+          ]
+        },
+        -1,
+        { value: '重新命名' },
+        { value: '删除' },
+        { value: '移到群组', subMenu: [1, 2, 3, 4, 5, 6] },
+        -1,
+        { value: '共享列表' }
+      ]
     }
   },
   mounted() {
     this.initMenuRect()
     this.$store.commit(MUTATION_SET_INCREMENT_ID, 100)
   },
+
   methods: {
     initMenuRect() {
       let menuListRect = this.$refs.menuList.getBoundingClientRect()
@@ -203,6 +225,16 @@ export default {
         })
       })
     },
+
+    onMouseRightClick(ev, item, index) {
+      console.log(ev, item, index)
+      this.$refs.contextMenu.showContextMenu(ev.clientX, ev.clientY)
+    },
+
+    onClickMenuItem(a, b) {
+      console.log('---ab', a, b)
+      // this.$refs.contextMenu.hide()
+    }
   }
 }
 </script>

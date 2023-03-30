@@ -17,8 +17,7 @@
     <card-item class="all-card" :card-type="3" :is-selected="currentCard=== 3"
                @click="onClickCard(3)"
                @contextmenu.prevent="onMouseRightClick($event)" />
-    <type-list-layout ref="typeList" style="margin-top: 16px; margin-bottom: 30px; "
-                      @contextmenu.prevent="onMouseRightClick($event)" />
+    <type-list-layout ref="typeList" style="margin-top: 16px; margin-bottom: 30px; " />
     <div class="bottom-add bottom-divider">
       <div class="add"></div>
       <span @click="showCreateTypeDialog = true">添加列表</span>
@@ -80,7 +79,7 @@ export default {
     },
     onMouseRightClick(ev) {
       console.log('-----right mouse', ev)
-    }
+    },
   }
 }
 </script>
