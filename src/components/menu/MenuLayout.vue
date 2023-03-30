@@ -8,15 +8,17 @@
         <img src="src/assets/svg/ic_search_close.svg" alt="" class="input-close">
       </div>
     </div>
-    <div class="todo-card-layout">
+    <div class="todo-card-layout" @contextmenu.prevent="onMouseRightClick($event)">
       <card-item class="todo-item item-left" :card-type="1" :is-selected="currentCard=== 1"
                  @click="onClickCard(1)" />
       <card-item class="todo-item" :card-type="2" :is-selected="currentCard=== 2"
                  @click="onClickCard(2)" />
     </div>
     <card-item class="all-card" :card-type="3" :is-selected="currentCard=== 3"
-               @click="onClickCard(3)" />
-    <type-list-layout ref="typeList" style="margin-top: 16px; margin-bottom: 30px; " />
+               @click="onClickCard(3)"
+               @contextmenu.prevent="onMouseRightClick($event)" />
+    <type-list-layout ref="typeList" style="margin-top: 16px; margin-bottom: 30px; "
+                      @contextmenu.prevent="onMouseRightClick($event)" />
     <div class="bottom-add bottom-divider">
       <div class="add"></div>
       <span @click="showCreateTypeDialog = true">添加列表</span>
@@ -75,6 +77,9 @@ export default {
     },
     onDialogAnimationEnd() {
       this.$refs.dialogContent.reset()
+    },
+    onMouseRightClick(ev) {
+      console.log('-----right mouse', ev)
     }
   }
 }
