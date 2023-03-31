@@ -17,6 +17,8 @@
     display: flex;
     align-items: center;
     position: relative;
+    border-radius: 6px;
+    border: 2px solid transparent;
     // 保证比indicator高，这样拖拽的时候就看不到indicator了
     z-index: 100;
 
@@ -76,7 +78,6 @@
   }
 
   .menu-item-layout.item-selected {
-    border-radius: 6px;
     background-color: #54a3fd;
 
     .name {
@@ -86,5 +87,14 @@
     .count {
       color: #88c1fa;
     }
+  }
+
+  // 右键选中状态
+  .menu-item-layout.status-active {
+    border-color: #105dca;
+  }
+
+  .menu-item-layout.item-selected.status-active {
+    border-color: white;
   }
 }

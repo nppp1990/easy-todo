@@ -36,7 +36,7 @@ export default {
     }
   },
 
-  emits: ['clickMenuItem'],
+  emits: ['menuDismiss'],
 
   data() {
     return {
@@ -91,7 +91,6 @@ export default {
     },
 
     showContextMenu(x = 0, y = 0) {
-      console.log('---show')
       this.show = true
       this.$nextTick(() => {
         // 暂时只调整y值
@@ -107,22 +106,22 @@ export default {
     },
 
     hide() {
-      console.log('---hide')
       this.show = false
     },
 
     onClickMenuItem(index) {
       this.hide()
-      this.$emit('clickMenuItem', index)
+      this.$emit('menuDismiss', index)
     },
     onClickSubmenuItem(index, subIndex) {
       this.hide()
-      this.$emit('clickMenuItem', index, subIndex)
+      this.$emit('menuDismiss', index, subIndex)
     },
     onClickOutside() {
       if (!this.show) {
         return
       }
+      this.$emit('menuDismiss')
       this.hide()
     }
   }

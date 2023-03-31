@@ -13,7 +13,7 @@
           <type-item :name="item.name" :count="item.count"
                      :svg-name="`ic_type_white${item.svgIndex}`"
                      :color="`${colorList[item.colorIndex]}`"
-                     class="menu-item-layout" :class="{ 'item-selected': item.id === currentId}"
+                     class="menu-item-layout" :class="{ 'item-selected': item.id === currentId, 'status-active': index === activeIndex}"
                      @click="onItemClicked(item)"
                      draggable="true"
                      @drag="onDrag($event)"
@@ -31,7 +31,7 @@
       </TransitionGroup>
     </div>
     <context-menu :menu-list="menuList" ref="contextMenu"
-                  @click-menu-item="onClickMenuItem" />
+                  @menu-dismiss="onContextMenuClosed" />
   </div>
 </template>
 <script>
@@ -51,6 +51,7 @@ export default {
       default: -1
     }
   },
+  emits: [],
   components: {
     TypeItem,
     ContextMenu,
@@ -79,6 +80,7 @@ export default {
       isDraggingOut: true,
       isDragging: false,
       overIndex: -2,
+      activeIndex: -2,
 
       menuRect: {
         top: 0,
@@ -240,12 +242,13 @@ export default {
 
     onMouseRightClick(ev, item, index) {
       console.log(ev, item, index)
+      this.activeIndex = index
       this.$refs.contextMenu.showContextMenu(ev.clientX, ev.clientY)
     },
 
-    onClickMenuItem(a, b) {
-      console.log('---ab', a, b)
-      // this.$refs.contextMenu.hide()
+    onContextMenuClosed(index, subIndex) {
+      console.log('---onContextMenuClosed', index, subIndex)
+      this.activeIndex = -1
     }
   }
 }
