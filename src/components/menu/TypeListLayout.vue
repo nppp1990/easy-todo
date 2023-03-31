@@ -90,22 +90,34 @@ export default {
         bottom: 0
       },
       menuList: [
-        { value: '显示列表信息' },
+        { value: '显示列表信息', type: 'showType' },
         -1,
-        { value: '在新窗口中打开列表' },
+        { value: '在新窗口中打开列表', type: 'none' },
         -1,
         {
           value: '排序方式',
           subMenu: [
-            '手动', '创建日期', '截止日期', '优先级', '标题'
+            { value: '手动' },
+            { value: '创建日期' },
+            { value: '截止日期' },
+            { value: '优先级' },
+            { value: '标题' },
           ]
         },
         -1,
-        { value: '重新命名' },
-        { value: '删除' },
-        { value: '移到群组', subMenu: [1, 2, 3, 4, 5, 6] },
+        { value: '重新命名', type: 'rename' },
+        { value: '删除', type: 'none' },
+        {
+          value: '移到群组', subMenu: [
+            { value: '群组1' },
+            { value: '群组2' },
+            { value: '群组3' },
+            { value: '群组4' },
+            { value: '群组5' },
+          ]
+        },
         -1,
-        { value: '共享列表' }
+        { value: '共享列表', type: 'none' }
       ]
     }
   },

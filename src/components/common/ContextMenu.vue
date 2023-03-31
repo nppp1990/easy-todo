@@ -10,7 +10,7 @@
           <div class="context-sub context-root-bg" :style="{top: subStyleList[index].top + 'px', left: subStyleList[index].left + 'px'}">
             <div v-for="(sub, subIndex) in item.subMenu" :key="subIndex" class="context-item context-sub-item"
                  @click="onClickSubmenuItem(index, subIndex)">
-              <span>{{ sub }}</span>
+              <span>{{ sub.value }}</span>
             </div>
           </div>
         </template>
@@ -30,12 +30,6 @@ export default {
   name: "ContextMenu",
 
   props: {
-    // [
-    //   { value: 1 },
-    //   { value: 4, subMenu: [1, 2, 3] },
-    //   -1,//  todo:这里简单点、item=-1就认为是分割线
-    //   { value: 4, subMenu: [1, 2, 3, 4, 5, 6] },
-    // ]
     menuList: {
       type: Array,
       required: true
@@ -66,9 +60,6 @@ export default {
     }
   },
   mounted() {
-  },
-  updated() {
-    console.log('----update')
   },
   methods: {
     showSubMenu(ev, index) {
