@@ -20,9 +20,9 @@
     <type-list-layout ref="typeList" style="margin-top: 16px; margin-bottom: 30px; " />
     <div class="bottom-add bottom-divider">
       <div class="add"></div>
-      <span @click="showCreateTypeDialog = true">添加列表</span>
+      <span @click="showTypeDialog = true">添加列表</span>
     </div>
-    <el-dialog v-model="showCreateTypeDialog"
+    <el-dialog v-model="showTypeDialog"
                :close-on-click-modal="false"
                width="480px"
                @closed="onDialogAnimationEnd"
@@ -49,7 +49,16 @@ export default {
     return {
       currentCard: 1,
       searchText: '',
-      showCreateTypeDialog: false,
+      showTypeDialog: false,
+    }
+  },
+  watch: {
+    showTypeDialog(newShow) {
+      if (newShow) {
+        this.$nextTick(()=>{
+          this.$refs.dialogContent.autoFocus()
+        })
+      }
     }
   },
   methods: {
@@ -60,7 +69,7 @@ export default {
       this.searchText = ''
     },
     onDialogClosed(res) {
-      this.showCreateTypeDialog = false
+      this.showTypeDialog = false
       if (res) {
         console.log('----submit', res)
         this.$store.dispatch(ACTION_CREATE_TYPE, res).then(typeInfo => {

@@ -3,7 +3,7 @@
     <h4>新建列表</h4>
     <div class="name-layout">
       <span>名称：</span>
-      <input type="text" v-model="typeName">
+      <input type="text" v-model="typeName" ref="nameInput">
     </div>
     <div class="label-layout">
       <div class="color-layout">
@@ -129,7 +129,16 @@ export default {
     // todo 点击气泡外部、关闭iconList
     onClickForm() {
       this.showIconList = false
+    },
+
+    autoFocus() {
+      // 这里用nextTick并不能使inout聚焦
+      setTimeout(()=>{
+        this.$refs.nameInput.focus()
+      })
     }
+
+
   }
 }
 </script>
