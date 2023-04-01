@@ -17,10 +17,10 @@
     <card-item class="all-card" :card-type="3" :is-selected="currentCard=== 3"
                @click="onClickCard(3)"
                @contextmenu.prevent="onMouseRightClick($event)" />
-    <type-list-layout ref="typeList" style="margin-top: 16px; margin-bottom: 30px; " />
+    <type-list-layout ref="typeList" style="margin-top: 16px; margin-bottom: 30px;" @right-click-item="onTypeListContextSelected" />
     <div class="bottom-add bottom-divider">
       <div class="add"></div>
-      <span @click="showTypeDialog = true">添加列表</span>
+      <span @click="addType">添加列表</span>
     </div>
     <el-dialog v-model="showTypeDialog"
                :close-on-click-modal="false"
@@ -28,7 +28,7 @@
                @closed="onDialogAnimationEnd"
                :show-close="false"
                align-center>
-      <type-dialog-layout @close="onDialogClosed" ref="dialogContent" />
+      <type-dialog-layout @close="onDialogClosed" ref="dialogContent" v-bind="typeDialogInfo" />
     </el-dialog>
   </div>
 </template>
@@ -37,6 +37,7 @@ import CardItem from "@/components/menu/CardItem.vue";
 import TypeListLayout from "@/components/menu/TypeListLayout.vue";
 import TypeDialogLayout from "@/components/menu/TypeDialogLayout.vue";
 import { ACTION_CREATE_TYPE } from "@/store/modules/type";
+import { DEFAULT_COLOR_INDEX, DEFAULT_ICON_INDEX, DEFAULT_TITLE } from "@/components/menu/TypeDialogLayout.vue";
 
 export default {
   name: "MenuLayout",
@@ -50,12 +51,19 @@ export default {
       currentCard: 1,
       searchText: '',
       showTypeDialog: false,
+      typeDialogInfo: {
+        name: '',
+        colorIndex: DEFAULT_COLOR_INDEX,
+        iconIndex: DEFAULT_ICON_INDEX,
+        title: DEFAULT_TITLE,
+        typeId: -1,
+      }
     }
   },
   watch: {
     showTypeDialog(newShow) {
       if (newShow) {
-        this.$nextTick(()=>{
+        this.$nextTick(() => {
           this.$refs.dialogContent.autoFocus()
         })
       }
@@ -72,23 +80,50 @@ export default {
       this.showTypeDialog = false
       if (res) {
         console.log('----submit', res)
-        this.$store.dispatch(ACTION_CREATE_TYPE, res).then(typeInfo => {
-          console.log('---add type', typeInfo)
-          this.$refs.typeList.addType(typeInfo)
-        }).catch(err => {
-          console.log(err)
-        })
-        console.log('-----id:' + this.$store.getters.incrementId)
+        if (res.id === -1) {
+          this.$store.dispatch(ACTION_CREATE_TYPE, res).then(typeInfo => {
+            console.log('---add type', typeInfo)
+            this.$refs.typeList.addType(typeInfo)
+          }).catch(err => {
+            console.log(err)
+          })
+          console.log('-----id:' + this.$store.getters.incrementId)
+        } else {
+          this.$refs.typeList.modifyItem(res)
+        }
       } else {
         console.log('----close dialog')
       }
     },
     onDialogAnimationEnd() {
-      this.$refs.dialogContent.reset()
     },
     onMouseRightClick(ev) {
       console.log('-----right mouse', ev)
     },
+    onTypeListContextSelected(res) {
+      let { typeItem, type, index, subIndex } = res
+      if (type === 'showType') {
+        if (typeItem) {
+          this.showTypeDialog = true
+          let { colorIndex, svgIndex, name, id } = typeItem
+          this.typeDialogInfo.title = `"${ name }"简介`
+          this.typeDialogInfo.name = name
+          this.typeDialogInfo.colorIndex = colorIndex
+          this.typeDialogInfo.iconIndex = svgIndex
+          this.typeDialogInfo.typeId = id
+        }
+      }
+    },
+    addType() {
+      this.showTypeDialog = true
+      this.typeDialogInfo = {
+        name: '',
+        colorIndex: DEFAULT_COLOR_INDEX,
+        iconIndex: DEFAULT_ICON_INDEX,
+        title: DEFAULT_TITLE,
+        typeId: -1,
+      }
+    }
   }
 }
 </script>

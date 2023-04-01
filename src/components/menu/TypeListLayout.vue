@@ -67,7 +67,7 @@ export default {
       default: -1
     }
   },
-  emits: [],
+  emits: ['rightClickItem'],
   components: {
     TypeItem,
     ContextMenu,
@@ -140,7 +140,7 @@ export default {
       dialog: {
         showDeleteDialog: false,
         title: ''
-      }
+      },
     }
   },
   mounted() {
@@ -260,6 +260,14 @@ export default {
       })
     },
 
+    modifyItem(newItem) {
+      const oldIndex = this.list.findIndex(item => item.id === newItem.id)
+      if (oldIndex !== -1) {
+        this.list[oldIndex] = newItem
+        this.currentId = newItem.id
+      }
+    },
+
     onMouseRightClick(ev, item, index) {
       this.activeIndex = index
       this.$refs.contextMenu.showContextMenu(ev.clientX, ev.clientY)
@@ -270,10 +278,11 @@ export default {
 
       if (subIndex !== undefined) {
         // 点击sub-menu
-
       } else if (index !== undefined) {
         // 点击menu
-        if (this.menuList[index].type === 'delete') {
+        const type = this.menuList[index].type
+
+        if (type === 'delete') {
           let typeItem = this.list[this.activeIndex]
           // this.list.splice(this.activeIndex, 1)
           if (typeItem.count > 0) {
@@ -283,9 +292,11 @@ export default {
           } else {
             this.list.splice(this.activeIndex, 1)
           }
+        } else if (type === 'showType') {
+          let typeItem = this.list[this.activeIndex]
+          this.$emit('rightClickItem', { typeItem, type, index, subIndex })
         }
       }
-      console.log('------xxxx')
       // 把右键选中状态置空
       this.activeIndex = -1
     },
@@ -296,7 +307,7 @@ export default {
       const deleteIndex = this.activeIndex
       this.activeIndex = -1
       if (yes) {
-        this.$nextTick(()=>{
+        this.$nextTick(() => {
           this.list.splice(deleteIndex, 1)
         })
       }

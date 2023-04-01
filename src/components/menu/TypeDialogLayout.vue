@@ -1,6 +1,6 @@
 <template>
   <form class="dialog-layout" @submit.prevent="onSubmit">
-    <h4>新建列表</h4>
+    <h4>{{ title }}</h4>
     <div class="name-layout">
       <span>名称：</span>
       <input type="text" v-model="typeName" ref="nameInput">
@@ -18,7 +18,7 @@
       <div class="divider" />
       <div class="icon-layout">
         <span>图标：</span>
-        <el-popover  placement="right" :width="274" trigger="click" :visible="showIconList">
+        <el-popover placement="right" :width="274" trigger="click" :visible="showIconList">
           <template #reference>
             <!--    这里clickoutside逻辑有bug，暂时把outside设置为这个按钮        -->
             <div class="icon-selector" @click="showIconList = !showIconList" v-click-outside="onClickOutside">
@@ -49,8 +49,9 @@
 <script>
 import CircleIcon from "@/components/common/CircleIcon.vue";
 
-const DEFAULT_ICON_INDEX = 0
-const DEFAULT_COLOR_INDEX = 5
+export const DEFAULT_ICON_INDEX = 0
+export const DEFAULT_COLOR_INDEX = 5
+export const DEFAULT_TITLE = '新建列表'
 export const TYPE_COLOR_LIST = [
   '#fc3d39',
   '#fd9426',
@@ -84,6 +85,20 @@ export default {
     name: {
       type: String,
       default: '',
+    },
+    title: {
+      type: String,
+      default: DEFAULT_TITLE
+    },
+    typeId: {
+      type: Number,
+    }
+  },
+  watch: {
+    typeId() {
+      this.currentColorIndex = this.colorIndex
+      this.currentIconIndex = this.iconIndex
+      this.typeName = this.name
     }
   },
   data() {
@@ -97,12 +112,6 @@ export default {
     }
   },
   methods: {
-    reset() {
-      this.typeName = ''
-      this.currentIconIndex = DEFAULT_ICON_INDEX
-      this.currentColorIndex = DEFAULT_COLOR_INDEX
-    },
-
     onClickOutside() {
       this.showIconList = false
     },
@@ -112,12 +121,14 @@ export default {
     },
     onSubmit() {
       this.showIconList = false
-      this.$emit('close', {
+      let newItem = {
         name: this.typeName,
         colorIndex: this.currentColorIndex,
         color: this.colorList[this.currentColorIndex],
         svgIndex: this.currentIconIndex,
-      })
+        id: this.typeId
+      }
+      this.$emit('close', newItem)
     },
     onClickColorItem(index) {
       this.currentColorIndex = index
@@ -133,12 +144,10 @@ export default {
 
     autoFocus() {
       // 这里用nextTick并不能使inout聚焦
-      setTimeout(()=>{
+      setTimeout(() => {
         this.$refs.nameInput.focus()
       })
     }
-
-
   }
 }
 </script>
