@@ -32,6 +32,22 @@
     </div>
     <context-menu :menu-list="menuList" ref="contextMenu"
                   @menu-dismiss="onContextMenuClosed" />
+    <el-dialog
+        class="feedback"
+        v-model="dialog.showDeleteDialog"
+        :show-close="false"
+        align-center
+        width="260px">
+      <div class="type-dialog">
+        <img src="src/assets/images/haha.jpeg" alt="">
+        <h3>删除列表 "{{ dialog.title }}" ？</h3>
+        <span class="message">这将删除此列表中所有的提醒事项。</span>
+        <div style="margin-top: 16px">
+          <el-button @click="onDelTypeDialogMiss(false)">取消</el-button>
+          <el-button type="primary" @click="onDelTypeDialogMiss(true)">删除</el-button>
+        </div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 <script>
@@ -108,7 +124,7 @@ export default {
         },
         -1,
         { value: '重新命名', type: 'rename' },
-        { value: '删除', type: 'none' },
+        { value: '删除', type: 'delete' },
         {
           value: '移到群组', subMenu: [
             { value: '群组1' },
@@ -120,7 +136,11 @@ export default {
         },
         -1,
         { value: '共享列表', type: 'none' }
-      ]
+      ],
+      dialog: {
+        showDeleteDialog: false,
+        title: ''
+      }
     }
   },
   mounted() {
@@ -241,19 +261,54 @@ export default {
     },
 
     onMouseRightClick(ev, item, index) {
-      console.log(ev, item, index)
       this.activeIndex = index
       this.$refs.contextMenu.showContextMenu(ev.clientX, ev.clientY)
     },
 
     onContextMenuClosed(index, subIndex) {
       console.log('---onContextMenuClosed', index, subIndex)
+
+      if (subIndex !== undefined) {
+        // 点击sub-menu
+
+      } else if (index !== undefined) {
+        // 点击menu
+        if (this.menuList[index].type === 'delete') {
+          let typeItem = this.list[this.activeIndex]
+          // this.list.splice(this.activeIndex, 1)
+          if (typeItem.count > 0) {
+            this.dialog.showDeleteDialog = true
+            this.dialog.title = typeItem.name
+            return
+          } else {
+            this.list.splice(this.activeIndex, 1)
+          }
+        }
+      }
+      console.log('------xxxx')
+      // 把右键选中状态置空
       this.activeIndex = -1
+    },
+
+    onDelTypeDialogMiss(yes) {
+      console.log('---y', yes)
+      this.dialog.showDeleteDialog = false
+      const deleteIndex = this.activeIndex
+      this.activeIndex = -1
+      if (yes) {
+        this.$nextTick(()=>{
+          this.list.splice(deleteIndex, 1)
+        })
+      }
     }
+
+
   }
 }
 </script>
 <style scoped lang="scss">
+$--el-dialog-bg-color: red;
+
 .list-move, /* 对移动中的元素应用的过渡 */
 .list-enter-active,
 .list-leave-active {

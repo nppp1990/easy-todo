@@ -70,8 +70,6 @@ export default {
       if (subLayout) {
         let subRect = subLayout.getBoundingClientRect()
         let { offsetWidth: bodyWidth, offsetHeight: bodyHeight } = document.body
-        console.log(bodyWidth, bodyHeight)
-
         if (subRect.bottom + MIN_WINDOW_MARGIN > bodyHeight) {
           if (subRect.height - MIN_WINDOW_MARGIN > bodyHeight) {
             // 如果subMenu太大，保证上面能看到

@@ -157,7 +157,7 @@ export default {
 }
 
 .card-layout.all.unselected .circle-icon {
-  background-color: var(--todo-gray);
+  background-color: var(--todo-gray1);
 }
 
 .card-layout.selected.today {
@@ -169,7 +169,7 @@ export default {
 }
 
 .card-layout.selected.all {
-  background-color: var(--todo-gray);
+  background-color: var(--todo-gray1);
 }
 
 .card-layout:hover {
