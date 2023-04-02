@@ -98,7 +98,7 @@ export default {
           y = bodyHeight - height - MIN_WINDOW_MARGIN
         }
         // todo：这里右键以后还会触发outside，导致show=false，所以改一点点x、y值、防止触发outside
-        this.position = { x: x - 1, y: y - 1 }
+        this.position = { x: x - 2, y: y - 2 }
       })
 
     },

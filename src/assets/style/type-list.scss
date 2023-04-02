@@ -39,18 +39,31 @@
       color: var(--todo-text-gray2);
       margin-right: 12px;
     }
+
+    &.item-selected {
+      background-color: #54a3fd;
+
+      .name {
+        color: white;
+      }
+
+      .count {
+        color: #88c1fa;
+      }
+    }
+
+    // 右键选中状态
+    &.status-active {
+      border-color: #105dca;
+    }
+
+    &.item-selected.status-active {
+      border-color: white;
+    }
   }
 
   .indicator-item {
     position: relative;
-
-    //.top-indicator {
-    //  top: -4px;
-    //}
-
-    //.bottom-indicator {
-    //  bottom: -4px;
-    //}
 
     .indicator {
       position: absolute;
@@ -76,35 +89,10 @@
       }
     }
   }
-
-  .menu-item-layout.item-selected {
-    background-color: #54a3fd;
-
-    .name {
-      color: white;
-    }
-
-    .count {
-      color: #88c1fa;
-    }
-  }
-
-  // 右键选中状态
-  .menu-item-layout.status-active {
-    border-color: #105dca;
-  }
-
-  .menu-item-layout.item-selected.status-active {
-    border-color: white;
-  }
 }
 
 .feedback.el-dialog {
   --el-dialog-bg-color: var(--todo-gray2);
-  /* background: rgba(0, 0, 0, .2) !important; */
-  //background: rgba(0, 0, 0, 0.2) !important;
-  //border: rgb(8, 255, 243) 1px solid;
-  //backdrop-filter: blur(3px);
 }
 
 .type-dialog {
