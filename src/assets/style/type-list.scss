@@ -28,6 +28,16 @@
       margin: 0 8px 0 16px;
     }
 
+    & > input {
+      flex: 1;
+      outline: 2px solid #7aa7e5;;
+      border: none;
+      border-radius: 2px;
+      height: 1em;
+      font-size: 14px;
+      color: var(--todo-black1);
+    }
+
     .name {
       font-size: 14px;
       color: var(--todo-black1);
@@ -37,6 +47,7 @@
     .count {
       font-size: 12px;
       color: var(--todo-text-gray2);
+      margin-left: 10px;
       margin-right: 12px;
     }
 

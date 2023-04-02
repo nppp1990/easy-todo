@@ -13,6 +13,7 @@
           <type-item :name="item.name" :count="item.count"
                      :svg-name="`ic_type_white${item.svgIndex}`"
                      :color="`${colorList[item.colorIndex]}`"
+                     :edit="index === this.currentEditIndex"
                      class="menu-item-layout" :class="{ 'item-selected': item.id === currentId, 'status-active': index === activeIndex}"
                      @click="onItemClicked(item)"
                      draggable="true"
@@ -22,7 +23,8 @@
                      @dragenter.prevent="onDragEnter($event, item, index)"
                      @dragleave="onDragLeave($event, index)"
                      @dragend="onDragEnd($event, index)"
-                     @contextmenu.stop.prevent="onMouseRightClick($event, item, index)" />
+                     @contextmenu.stop.prevent="onMouseRightClick($event, item, index)"
+                     @modify-name="(name)=>onNameModify(index, name)" />
           <div class="indicator bottom-indicator">
             <div class="indicator-circle"></div>
             <div class="indicator-line"></div>
@@ -92,6 +94,7 @@ export default {
       ],
       colorList: TYPE_COLOR_LIST,
       currentId: this.indexId,
+      currentEditIndex: -1,
       isSelected: true, // 要么是选中、失去焦点
       isDraggingOut: true,
       isDragging: false,
@@ -295,6 +298,8 @@ export default {
         } else if (type === 'showType') {
           let typeItem = this.list[this.activeIndex]
           this.$emit('rightClickItem', { typeItem, type, index, subIndex })
+        } else if (type === 'rename') {
+          this.currentEditIndex = this.activeIndex
         }
       }
       // 把右键选中状态置空
@@ -311,9 +316,13 @@ export default {
           this.list.splice(deleteIndex, 1)
         })
       }
-    }
+    },
 
-
+    onNameModify(index, name) {
+      console.log('---name', index, name)
+      this.currentEditIndex = -1
+      this.list[index].name = name
+    },
   }
 }
 </script>

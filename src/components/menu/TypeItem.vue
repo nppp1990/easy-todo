@@ -1,7 +1,11 @@
 <template>
   <div>
     <circle-icon class="circle" :svg-name="svgName" :color="color" />
-    <span class="name">{{ name }}</span>
+    <input v-if="edit" v-model="nameFromInput" ref="input"
+           @focusout="$emit('modifyName', nameFromInput)"
+           @keydown.enter="$emit('modifyName', nameFromInput)"
+           @click.stop />
+    <span v-else class="name">{{ name }}</span>
     <span class="count">{{ count }}</span>
   </div>
 </template>
@@ -29,8 +33,30 @@ export default {
     svgName: {
       type: String,
       required: true
+    },
+    edit: {
+      type: Boolean,
+      default: true,
     }
-  }
+  },
+  // emits: ['update:edit'],
+  data() {
+    return {
+      nameFromInput: this.name
+    }
+  },
+  watch: {
+    edit(newEdit) {
+      if (newEdit) {
+        this.nameFromInput = this.name
+        this.$nextTick(() => {
+          this.$refs.input.focus()
+          this.$refs.input.selectionStart = 0
+          this.$refs.input.selectionEnd = this.nameFromInput.length
+        })
+      }
+    }
+  },
 }
 </script>
 <style scoped lang="scss">
