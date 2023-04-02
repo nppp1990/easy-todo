@@ -136,21 +136,47 @@ export default {
     position: relative;
 
     input {
+      //transition: outline-width 4s, text-shadow 2s;
       width: 100%;
       height: 30px;
       border: 1px solid #d2d2d2;
+      outline: 0 solid #7aa7e5;
+      outline-offset: 0;
       border-radius: 6px;
       padding: 0 28px;
-      outline: none;
-      display: block;
       background-color: #d7d7d7;
-      background-size: 12px 12px;
       color: var(--todo-black1);
+
+      &:focus {
+        outline-width: 3px;
+        animation: border-ani 0.2s;
+      }
+
+      &:hover {
+        border-color: #7aa7e5;
+      }
+
+      &::placeholder {
+        color: var(--todo-placeholder-color);
+      }
+
+      @keyframes border-ani {
+        0% {
+          outline-width: 0;
+        }
+
+        70% {
+          outline-width: 8px;
+          outline-color: rgba(133, 167, 204, 0.99)
+        }
+
+        100% {
+          outline-width: 3px;
+          outline-color: #7aa7e5
+        }
+      }
     }
 
-    input:focus, :hover {
-      border-color: #74a2e2;
-    }
 
     .input-search {
       width: 12px;
@@ -175,10 +201,6 @@ export default {
         height: 12px;
       }
     }
-  }
-
-  input::placeholder {
-    color: var(--todo-placeholder-color);
   }
 }
 
