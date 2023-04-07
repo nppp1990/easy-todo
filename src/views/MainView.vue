@@ -1,23 +1,22 @@
 <template>
   <div class="main-container">
     <menu-layout class="menu-container" />
-    <div class="content-container">
-      22---{{ incrementId }}
-    </div>
+    <todo-content class="content-container" />
   </div>
 </template>
 <script>
 import MenuLayout from "@/components/menu/MenuLayout.vue";
+import TodoContent from "@/components/edit/TodoContent.vue";
 import { mapState } from "vuex";
 
 export default {
   name: "MainView",
   components: {
     MenuLayout,
+    TodoContent,
   },
   data() {
-    return {
-    }
+    return {}
   },
   computed: {
     ...mapState({
@@ -26,8 +25,7 @@ export default {
   },
   mounted() {
   },
-  methods: {
-  }
+  methods: {}
 
 }
 </script>

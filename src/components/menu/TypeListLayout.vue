@@ -57,6 +57,7 @@ import TypeItem from "@/components/menu/TypeItem.vue";
 import { TYPE_COLOR_LIST } from "@/components/menu/TypeDialogLayout.vue";
 import { MUTATION_SET_INCREMENT_ID } from "@/store/modules/type";
 import ContextMenu from "@/components/common/ContextMenu.vue";
+import { MUTATION_UPDATE_CURRENT_TYPE } from "@/store/modules/currentType";
 
 // 这里和.menu-item-layout的高度保持同步
 const MENU_ITEM_HEIGHT = 36
@@ -146,12 +147,26 @@ export default {
       },
     }
   },
+  // watch: {
+  //   currentId(id) {
+  //
+  //   }
+  // },
+  created() {
+    // todo 没做存储，暂时用第一个
+    this.currentId = this.list[0].id
+    this.updateCurrentType(this.list[0])
+  },
   mounted() {
     this.initMenuRect()
     this.$store.commit(MUTATION_SET_INCREMENT_ID, 100)
   },
 
   methods: {
+    updateCurrentType(item) {
+      this.$store.commit(MUTATION_UPDATE_CURRENT_TYPE, item)
+    },
+
     initMenuRect() {
       let menuListRect = this.$refs.menuList.getBoundingClientRect()
       let { top, bottom, left, right } = menuListRect
@@ -162,6 +177,7 @@ export default {
 
     onItemClicked(item) {
       this.currentId = item.id
+      this.updateCurrentType(item)
     },
     onDragStart(ev, item, index) {
       this.isDragging = true
@@ -255,6 +271,7 @@ export default {
       this.list.push(item)
       this.$nextTick(() => {
         this.currentId = item.id
+        this.updateCurrentType(item)
         const scrollList = this.$refs.listLayout
         scrollList.scrollTo({
           top: scrollList.scrollHeight,
@@ -266,8 +283,10 @@ export default {
     modifyItem(newItem) {
       const oldIndex = this.list.findIndex(item => item.id === newItem.id)
       if (oldIndex !== -1) {
-        this.list[oldIndex] = newItem
+        console.log('---newItem', newItem)
+        this.list[oldIndex] = {...this.list[oldIndex], ...newItem}
         this.currentId = newItem.id
+        this.updateCurrentType(this.list[oldIndex])
       }
     },
 
@@ -313,7 +332,13 @@ export default {
       this.activeIndex = -1
       if (yes) {
         this.$nextTick(() => {
+          let isDelCurrent = this.list[deleteIndex].id === this.currentId
           this.list.splice(deleteIndex, 1)
+          // todo 暂时还没做list为空的情况
+          if (isDelCurrent) {
+            this.currentId = this.list[0].id
+            this.updateCurrentType(this.list[0])
+          }
         })
       }
     },
@@ -322,6 +347,10 @@ export default {
       console.log('---name', index, name)
       this.currentEditIndex = -1
       this.list[index].name = name
+      if (this.currentId === this.list[index].id) {
+        this.updateCurrentType(this.list[index])
+      }
+
     },
   }
 }
