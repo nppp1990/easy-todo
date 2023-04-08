@@ -46,110 +46,90 @@
     </div>
   </form>
 </template>
-<script>
+<script setup>
 import CircleIcon from "@/components/common/CircleIcon.vue";
+import { DEFAULT_COLOR_INDEX, DEFAULT_ICON_INDEX, DEFAULT_TITLE, TYPE_COLOR_LIST, TYPE_ICON_SIZE } from "@/components/menu/menuConstants";
+import { ref, watch } from "vue";
 
-export const DEFAULT_ICON_INDEX = 0
-export const DEFAULT_COLOR_INDEX = 5
-export const DEFAULT_TITLE = '新建列表'
-export const TYPE_COLOR_LIST = [
-  '#fc3d39',
-  '#fd9426',
-  '#fecb2f',
-  '#29c55e',
-  '#56abef',
-  '#157efb',
-  '#595ad3',
-  '#e8456c',
-  '#bf7ad9',
-  '#9c8565',
-  '#5b6770',
-  '#dba6a0',
-]
-const TYPE_ICON_SIZE = 78
-
-export default {
-  name: "TypeDialogLayout",
-  components: {
-    CircleIcon,
+const props = defineProps({
+  colorIndex: {
+    type: Number,
+    default: DEFAULT_COLOR_INDEX
   },
-  props: {
-    colorIndex: {
-      type: Number,
-      default: DEFAULT_COLOR_INDEX
-    },
-    iconIndex: {
-      type: Number,
-      default: DEFAULT_ICON_INDEX
-    },
-    name: {
-      type: String,
-      default: '',
-    },
-    title: {
-      type: String,
-      default: DEFAULT_TITLE
-    },
-    typeId: {
-      type: Number,
-    }
+  iconIndex: {
+    type: Number,
+    default: DEFAULT_ICON_INDEX
   },
-  watch: {
-    typeId() {
-      this.currentColorIndex = this.colorIndex
-      this.currentIconIndex = this.iconIndex
-      this.typeName = this.name
-    }
+  name: {
+    type: String,
+    default: '',
   },
-  data() {
-    return {
-      currentColorIndex: this.colorIndex,
-      currentIconIndex: this.iconIndex,
-      typeName: this.name,
-      showIconList: false,
-      colorList: TYPE_COLOR_LIST,
-      typeIconSize: TYPE_ICON_SIZE
-    }
+  title: {
+    type: String,
+    default: DEFAULT_TITLE
   },
-  methods: {
-    onClickOutside() {
-      this.showIconList = false
-    },
-    onClickCancel() {
-      this.showIconList = false
-      this.$emit('close')
-    },
-    onSubmit() {
-      this.showIconList = false
-      let newItem = {
-        name: this.typeName,
-        colorIndex: this.currentColorIndex,
-        color: this.colorList[this.currentColorIndex],
-        svgIndex: this.currentIconIndex,
-        id: this.typeId
-      }
-      this.$emit('close', newItem)
-    },
-    onClickColorItem(index) {
-      this.currentColorIndex = index
-    },
-    onClickIconItem(index) {
-      this.currentIconIndex = index
-      this.showIconList = false
-    },
-    // todo 点击气泡外部、关闭iconList
-    onClickForm() {
-      this.showIconList = false
-    },
-
-    autoFocus() {
-      // 这里用nextTick并不能使inout聚焦
-      setTimeout(() => {
-        this.$refs.nameInput.focus()
-      })
-    }
+  typeId: {
+    type: Number,
   }
+})
+
+const currentColorIndex = ref(props.colorIndex)
+const currentIconIndex = ref(props.iconIndex)
+const typeName = ref(props.name)
+const showIconList = ref(false)
+const colorList = ref(TYPE_COLOR_LIST)
+const typeIconSize = ref(TYPE_ICON_SIZE)
+
+const emit = defineEmits(['close'])
+
+
+watch(() => props.typeId, () => {
+  currentColorIndex.value = props.colorIndex
+  currentIconIndex.value = props.iconIndex
+  typeName.value = props.name
+})
+
+const onClickOutside = () => {
+  showIconList.value = false
 }
+const onClickCancel = () => {
+  showIconList.value = false
+  emit('close')
+}
+
+const onSubmit = () => {
+  showIconList.value = false
+  let newItem = {
+    name: typeName.value,
+    colorIndex: currentColorIndex.value,
+    color: colorList.value[currentColorIndex.value],
+    svgIndex: currentIconIndex.value,
+    id: props.typeId
+  }
+  emit('close', newItem)
+}
+
+const onClickColorItem = (index) => {
+  currentColorIndex.value = index
+}
+const onClickIconItem = (index) => {
+  currentIconIndex.value = index
+  showIconList.value = false
+}
+// // todo 点击气泡外部、关闭iconList
+// const onClickForm = () => {
+//   showIconList.value = false
+// }
+
+const nameInput = ref(null)
+const autoFocus = () => {
+  // 这里用nextTick并不能使inout聚焦
+  setTimeout(() => {
+    nameInput.value.focus()
+  })
+}
+defineExpose({autoFocus})
+
 </script>
 <style scoped>
 </style>

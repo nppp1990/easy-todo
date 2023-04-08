@@ -1,38 +1,32 @@
 <template>
   <div class="title-layout">
     <div class="add">
-      <div class="line line-x"></div>
-      <div class="line line-y"></div>
+      <div class="line line-x" />
+      <div class="line line-y" />
     </div>
     <h1 class="title" :style="`color: ${colorList[colorIndex]}`">{{ title }}</h1>
     <h1 class="count" :style="`color: ${colorList[colorIndex]}`">{{ count }}</h1>
   </div>
 </template>
-<script>
-import { TYPE_COLOR_LIST } from "@/components/menu/TypeDialogLayout.vue";
+<script setup>
+import { ref } from "vue";
+import { TYPE_COLOR_LIST } from "@/components/menu/menuConstants";
 
-export default {
-  name: "TitleLayout",
-  props: {
-    title: {
-      type: String,
-      required: true
-    },
-    count: {
-      type: Number,
-      required: true
-    },
-    colorIndex: {
-      type: Number,
-      required: true
-    },
+defineProps({
+  title: {
+    type: String,
+    required: true
   },
-  data() {
-    return {
-      colorList: TYPE_COLOR_LIST,
-    }
-  }
-}
+  count: {
+    type: Number,
+    required: true
+  },
+  colorIndex: {
+    type: Number,
+    required: true
+  },
+})
+const colorList = ref(TYPE_COLOR_LIST)
 </script>
 <style scoped lang="scss">
 .title-layout {

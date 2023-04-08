@@ -4,7 +4,7 @@
     <div class="input-wrapper">
       <input type="text" placeholder="搜索" v-model="searchText">
       <img src="src/assets/svg/ic_search.svg" alt="" class="input-search">
-      <div class="input-close-wrapper" v-show="searchText.length > 0" @click="clearSearch">
+      <div class="input-close-wrapper" v-show="searchText.length > 0" @click="searchText=''">
         <img src="src/assets/svg/ic_search_close.svg" alt="" class="input-close">
       </div>
     </div>
@@ -25,105 +25,92 @@
     <el-dialog v-model="showTypeDialog"
                :close-on-click-modal="false"
                width="480px"
-               @closed="onDialogAnimationEnd"
                :show-close="false"
                align-center>
       <type-dialog-layout @close="onDialogClosed" ref="dialogContent" v-bind="typeDialogInfo" />
     </el-dialog>
   </div>
 </template>
-<script>
+<script setup>
 import CardItem from "@/components/menu/CardItem.vue";
 import TypeListLayout from "@/components/menu/TypeListLayout.vue";
 import TypeDialogLayout from "@/components/menu/TypeDialogLayout.vue";
-import { ACTION_CREATE_TYPE } from "@/store/modules/type";
-import { DEFAULT_COLOR_INDEX, DEFAULT_ICON_INDEX, DEFAULT_TITLE } from "@/components/menu/TypeDialogLayout.vue";
+import { nextTick, reactive, ref, watch } from "vue";
+import { DEFAULT_COLOR_INDEX, DEFAULT_ICON_INDEX, DEFAULT_TITLE } from "@/components/menu/menuConstants";
+import { useTypeStore } from "@/store/type";
 
-export default {
-  name: "MenuLayout",
-  components: {
-    CardItem,
-    TypeListLayout,
-    TypeDialogLayout,
-  },
-  data() {
-    return {
-      currentCard: 1,
-      searchText: '',
-      showTypeDialog: false,
-      typeDialogInfo: {
-        name: '',
-        colorIndex: DEFAULT_COLOR_INDEX,
-        iconIndex: DEFAULT_ICON_INDEX,
-        title: DEFAULT_TITLE,
-        typeId: -1,
-      }
+const currentCard = ref(1)
+const searchText = ref('')
+const showTypeDialog = ref(false)
+let typeDialogInfo = reactive({
+  name: '',
+  colorIndex: DEFAULT_COLOR_INDEX,
+  iconIndex: DEFAULT_ICON_INDEX,
+  title: DEFAULT_TITLE,
+  typeId: -1,
+})
+
+const dialogContent = ref(null)
+const typeList = ref(null)
+
+
+watch(showTypeDialog, (newShow) => {
+  if (newShow) {
+    nextTick(() => {
+      dialogContent.value.autoFocus()
+    })
+  }
+})
+
+const onClickCard = (type) => {
+  currentCard.value = type
+}
+const typeStore = useTypeStore()
+
+const onDialogClosed = (res) => {
+  showTypeDialog.value = false
+  if (res) {
+    console.log('----submit', res)
+    if (res.id === -1) {
+      typeStore.addType(res).then(typeInfo => {
+        console.log('---add type', typeInfo)
+        typeList.value.addType(typeInfo)
+      }).catch(err => console.log(err))
+    } else {
+      typeList.value.modifyItem(res)
     }
-  },
-  watch: {
-    showTypeDialog(newShow) {
-      if (newShow) {
-        this.$nextTick(() => {
-          this.$refs.dialogContent.autoFocus()
-        })
-      }
+  } else {
+    console.log('----close dialog')
+  }
+}
+
+const onMouseRightClick = (ev) => {
+  console.log('-----right mouse', ev)
+}
+
+const onTypeListContextSelected = (res) => {
+  let { typeItem, type } = res
+  if (type === 'showType') {
+    if (typeItem) {
+      showTypeDialog.value = true
+      let { colorIndex, svgIndex, name, id } = typeItem
+      typeDialogInfo.title = `"${ name }"简介`
+      typeDialogInfo.name = name
+      typeDialogInfo.colorIndex = colorIndex
+      typeDialogInfo.iconIndex = svgIndex
+      typeDialogInfo.typeId = id
     }
-  },
-  methods: {
-    onClickCard(type) {
-      this.currentCard = type
-    },
-    clearSearch() {
-      this.searchText = ''
-    },
-    onDialogClosed(res) {
-      this.showTypeDialog = false
-      if (res) {
-        console.log('----submit', res)
-        if (res.id === -1) {
-          this.$store.dispatch(ACTION_CREATE_TYPE, res).then(typeInfo => {
-            console.log('---add type', typeInfo)
-            this.$refs.typeList.addType(typeInfo)
-          }).catch(err => {
-            console.log(err)
-          })
-          console.log('-----id:' + this.$store.getters.incrementId)
-        } else {
-          this.$refs.typeList.modifyItem(res)
-        }
-      } else {
-        console.log('----close dialog')
-      }
-    },
-    onDialogAnimationEnd() {
-    },
-    onMouseRightClick(ev) {
-      console.log('-----right mouse', ev)
-    },
-    onTypeListContextSelected(res) {
-      let { typeItem, type, index, subIndex } = res
-      if (type === 'showType') {
-        if (typeItem) {
-          this.showTypeDialog = true
-          let { colorIndex, svgIndex, name, id } = typeItem
-          this.typeDialogInfo.title = `"${ name }"简介`
-          this.typeDialogInfo.name = name
-          this.typeDialogInfo.colorIndex = colorIndex
-          this.typeDialogInfo.iconIndex = svgIndex
-          this.typeDialogInfo.typeId = id
-        }
-      }
-    },
-    addType() {
-      this.showTypeDialog = true
-      this.typeDialogInfo = {
-        name: '',
-        colorIndex: DEFAULT_COLOR_INDEX,
-        iconIndex: DEFAULT_ICON_INDEX,
-        title: DEFAULT_TITLE,
-        typeId: -1,
-      }
-    }
+  }
+}
+
+const addType = () => {
+  showTypeDialog.value = true
+  typeDialogInfo = {
+    name: '',
+    colorIndex: DEFAULT_COLOR_INDEX,
+    iconIndex: DEFAULT_ICON_INDEX,
+    title: DEFAULT_TITLE,
+    typeId: -1,
   }
 }
 </script>

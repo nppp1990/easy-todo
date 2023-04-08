@@ -3,20 +3,17 @@
     <img :src="`src/assets/svg/${svgName}.svg`" alt="">
   </div>
 </template>
-<script>
-export default {
-  name: "CircleIcon",
-  props: {
-    color: {
-      type: String,
-      default: '#157efb'
-    },
-    svgName: {
-      type: String,
-      default: 'ic_type_white0'
-    }
+<script setup>
+defineProps({
+  color: {
+    type: String,
+    default: '#157efb'
+  },
+  svgName: {
+    type: String,
+    default: 'ic_type_white0'
   }
-}
+})
 </script>
 <style scoped lang="scss">
 div {

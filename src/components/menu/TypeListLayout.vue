@@ -1,5 +1,5 @@
 <template>
-  <div class="type-layout" ref="listLayout">
+  <div class="type-layout" ref="refListLayout">
     <div class="indicator-item">
       <h3>我的列表</h3>
       <div class="indicator" v-show="overIndex === -1">
@@ -7,21 +7,19 @@
         <div class="indicator-line"></div>
       </div>
     </div>
-    <div ref="menuList">
+    <div ref="refMenuList">
       <TransitionGroup name="list">
         <div v-for="(item, index) in list" :key="item.id" :class="{'indicator-item': isShowIndicator(index)}" ref="items">
           <type-item :name="item.name" :count="item.count"
                      :svg-name="`ic_type_white${item.svgIndex}`"
                      :color="`${colorList[item.colorIndex]}`"
-                     :edit="index === this.currentEditIndex"
+                     :edit="index === currentEditIndex"
                      class="menu-item-layout" :class="{ 'item-selected': item.id === currentId, 'status-active': index === activeIndex}"
                      @click="onItemClicked(item)"
                      draggable="true"
                      @drag="onDrag($event)"
                      @dragstart="onDragStart($event, item, index)"
                      @dragover.prevent="onDragOver($event, item, index)"
-                     @dragenter.prevent="onDragEnter($event, item, index)"
-                     @dragleave="onDragLeave($event, index)"
                      @dragend="onDragEnd($event, index)"
                      @contextmenu.stop.prevent="onMouseRightClick($event, item, index)"
                      @modify-name="(name)=>onNameModify(index, name)" />
@@ -32,14 +30,14 @@
         </div>
       </TransitionGroup>
     </div>
-    <context-menu :menu-list="menuList" ref="contextMenu"
+    <context-menu :menu-list="menuList" ref="refContextMenu"
                   @menu-dismiss="onContextMenuClosed" />
     <el-dialog
-        class="feedback"
-        v-model="dialog.showDeleteDialog"
-        :show-close="false"
-        align-center
-        width="260px">
+      class="feedback"
+      v-model="dialog.showDeleteDialog"
+      :show-close="false"
+      align-center
+      width="260px">
       <div class="type-dialog">
         <img src="src/assets/images/haha.jpeg" alt="">
         <h3>删除列表 "{{ dialog.title }}" ？</h3>
@@ -52,308 +50,327 @@
     </el-dialog>
   </div>
 </template>
-<script>
+<script setup>
 import TypeItem from "@/components/menu/TypeItem.vue";
-import { TYPE_COLOR_LIST } from "@/components/menu/TypeDialogLayout.vue";
-import { MUTATION_SET_INCREMENT_ID } from "@/store/modules/type";
 import ContextMenu from "@/components/common/ContextMenu.vue";
-import { MUTATION_UPDATE_CURRENT_TYPE } from "@/store/modules/currentType";
+import { TYPE_COLOR_LIST } from "@/components/menu/menuConstants";
+import { nextTick, onMounted, reactive, ref } from "vue";
+import { useCurrentTypeStore } from "@/store/currentType";
+import { useTypeStore } from "@/store/type";
 
 // 这里和.menu-item-layout的高度保持同步
 const MENU_ITEM_HEIGHT = 36
+const colorList = TYPE_COLOR_LIST
 
-export default {
-  name: "TypeListLayout",
-  props: {
-    indexId: {
-      type: Number,
-      default: -1
-    }
-  },
-  emits: ['rightClickItem'],
-  components: {
-    TypeItem,
-    ContextMenu,
-  },
-  data() {
-    return {
-      list: [
-        { colorIndex: 1, svgIndex: 0, name: 'name1', count: 2, id: 1 },
-        { colorIndex: 7, svgIndex: 1, name: 'name2', count: 0, id: 2 },
-        { colorIndex: 4, svgIndex: 1, name: 'name3', count: 1, id: 3 },
-        { colorIndex: 1, svgIndex: 2, name: 'name4', count: 4, id: 4 },
-        { colorIndex: 1, svgIndex: 2, name: 'name5', count: 4, id: 5 },
-        { colorIndex: 1, svgIndex: 12, name: 'name6', count: 4, id: 6 },
-        { colorIndex: 10, svgIndex: 22, name: 'xxx1', count: 4, id: 7 },
-        { colorIndex: 10, svgIndex: 22, name: 'xxx2', count: 4, id: 8 },
-        { colorIndex: 10, svgIndex: 22, name: 'xxx3', count: 4, id: 9 },
-        { colorIndex: 10, svgIndex: 22, name: 'xxx4xx', count: 4, id: 10 },
-        { colorIndex: 10, svgIndex: 22, name: 'xxx43', count: 4, id: 11 },
-        { colorIndex: 10, svgIndex: 22, name: 'xxx42', count: 4, id: 12 },
-        { colorIndex: 10, svgIndex: 22, name: 'xxx41', count: 4, id: 13 },
-        { colorIndex: 10, svgIndex: 22, name: 'xxx45', count: 4, id: 14 },
-      ],
-      colorList: TYPE_COLOR_LIST,
-      currentId: this.indexId,
-      currentEditIndex: -1,
-      isSelected: true, // 要么是选中、失去焦点
-      isDraggingOut: true,
-      isDragging: false,
-      overIndex: -2,
-      activeIndex: -2,
+const refListLayout = ref(null)
+const refMenuList = ref(null)
+const refContextMenu = ref(null)
+const emit = defineEmits(['rightClickItem'])
 
-      menuRect: {
-        top: 0,
-        bottom: 0,
-        left: 0,
-        right: 0
-      },
-      listLayout: {
-        bottom: 0
-      },
-      menuList: [
-        { value: '显示列表信息', type: 'showType' },
-        -1,
-        { value: '在新窗口中打开列表', type: 'none' },
-        -1,
-        {
-          value: '排序方式',
-          subMenu: [
-            { value: '手动' },
-            { value: '创建日期' },
-            { value: '截止日期' },
-            { value: '优先级' },
-            { value: '标题' },
-          ]
-        },
-        -1,
-        { value: '重新命名', type: 'rename' },
-        { value: '删除', type: 'delete' },
-        {
-          value: '移到群组', subMenu: [
-            { value: '群组1' },
-            { value: '群组2' },
-            { value: '群组3' },
-            { value: '群组4' },
-            { value: '群组5' },
-          ]
-        },
-        -1,
-        { value: '共享列表', type: 'none' }
-      ],
-      dialog: {
-        showDeleteDialog: false,
-        title: ''
-      },
-    }
-  },
-  // watch: {
-  //   currentId(id) {
-  //
-  //   }
-  // },
-  created() {
-    // todo 没做存储，暂时用第一个
-    this.currentId = this.list[0].id
-    this.updateCurrentType(this.list[0])
-  },
-  mounted() {
-    this.initMenuRect()
-    this.$store.commit(MUTATION_SET_INCREMENT_ID, 100)
-  },
+// 列表数据展示相关
+const {
+  list, currentId,
+  updateCurrentType, onItemClicked,
+} = useTypeList()
 
-  methods: {
-    updateCurrentType(item) {
-      this.$store.commit(MUTATION_UPDATE_CURRENT_TYPE, item)
-    },
+// 列表拖拽相关
+const {
+  overIndex,
+  onDragStart, onDragOver, onDragEnd, onDrag, isShowIndicator
+} = useTypeListDrag(list, refListLayout, refMenuList)
 
-    initMenuRect() {
-      let menuListRect = this.$refs.menuList.getBoundingClientRect()
-      let { top, bottom, left, right } = menuListRect
-      this.menuRect = { top, bottom, left, right }
-      let layoutRect = this.$refs.listLayout.getBoundingClientRect()
-      this.listLayout.bottom = layoutRect.bottom
-    },
+// 右键contextMenu相关
+const {
+  currentEditIndex, activeIndex, menuList, dialog,
+  onMouseRightClick, onContextMenuClosed, onDelTypeDialogMiss, onNameModify
+} = useContextMenu(list, refContextMenu, emit, updateCurrentType, currentId)
 
-    onItemClicked(item) {
-      this.currentId = item.id
-      this.updateCurrentType(item)
-    },
-    onDragStart(ev, item, index) {
-      this.isDragging = true
-      console.log('----start drag', index)
-    },
-    onDragOver(event, item, index) {
-      this.overIndex = index
-      let ratio = event.offsetY / MENU_ITEM_HEIGHT
-      if (ratio < 1 / 4) {
-        this.overIndex = index - 1
-      } else if (ratio <= 3 / 4) {
-        // todo
-        this.overIndex = -2
-      } else {
-        this.overIndex = index
-      }
-    },
-    onDragEnter() {
-      // console.log('enter---x', event, item, index)
-    },
-    onDragEnd(event, index) {
-      this.isDragging = false
-      this.isDraggingOut = true
-      console.log('----drag end', event, index, this.overIndex)
-      if (this.overIndex === -2) {
-        return
-      }
-      // 要移动的item
-      const moveIndex = index
-      // 要插入的位置
-      let insertIndex = this.overIndex
-      if (moveIndex !== insertIndex) {
-        const moveItem = this.list[moveIndex]
-        this.list.splice(moveIndex, 1);
-        if (moveIndex > insertIndex) {
-          insertIndex++
-        }
-        this.list.splice(insertIndex, 0, moveItem);
-      }
-      this.isDragging = false
-      this.isDraggingOut = true
-      this.overIndex = -2
-    },
-    onDragLeave() {
-      // this.isDragging = false
-      // console.log('leave---x', index)
-    },
-    onDrag(ev) {
-      let { clientX, clientY } = ev
-      if (clientX === 0 && clientY === 0) {
-        return;
-      }
-      if (clientX < this.menuRect.left || clientX > this.menuRect.right) {
-        this.overIndex = -2
-        this.isDraggingOut = true
-        return
-      }
-      if (clientY < this.menuRect.top - MENU_ITEM_HEIGHT / 4) {
-        this.overIndex = -2
-        this.isDraggingOut = true
-        return
-      }
-      if (clientY > this.listLayout.bottom) {
-        this.overIndex = -2
-        this.isDraggingOut = true
-        return
-      }
-      this.isDraggingOut = false
-      if (clientY > this.menuRect.bottom) {
-        // 最底下
-        this.overIndex = this.list.length - 1
-      }
-    },
+function useTypeList() {
+  const list = ref([
+    { colorIndex: 1, svgIndex: 0, name: 'name1', count: 2, id: 1 },
+    { colorIndex: 7, svgIndex: 1, name: 'name2', count: 0, id: 2 },
+    { colorIndex: 4, svgIndex: 1, name: 'name3', count: 1, id: 3 },
+    { colorIndex: 1, svgIndex: 2, name: 'name4', count: 4, id: 4 },
+    { colorIndex: 1, svgIndex: 2, name: 'name5', count: 4, id: 5 },
+    { colorIndex: 1, svgIndex: 12, name: 'name6', count: 4, id: 6 },
+    { colorIndex: 10, svgIndex: 22, name: 'xxx1', count: 4, id: 7 },
+    { colorIndex: 10, svgIndex: 22, name: 'xxx2', count: 4, id: 8 },
+    { colorIndex: 10, svgIndex: 22, name: 'xxx3', count: 4, id: 9 },
+    { colorIndex: 10, svgIndex: 22, name: 'xxx4xx', count: 4, id: 10 },
+    { colorIndex: 10, svgIndex: 22, name: 'xxx43', count: 4, id: 11 },
+    { colorIndex: 10, svgIndex: 22, name: 'xxx42', count: 4, id: 12 },
+    { colorIndex: 10, svgIndex: 22, name: 'xxx41', count: 4, id: 13 },
+    { colorIndex: 10, svgIndex: 22, name: 'xxx45', count: 4, id: 14 },
+  ])
+  const currentId = ref(list.value[0].id)
 
-    isShowIndicator(index) {
-      if (!this.isDragging || this.isDraggingOut) {
-        // 不再滑动、或者滑出列表
-        return false
-      }
-      return index === this.overIndex
-    },
+  const currentTypeStore = useCurrentTypeStore()
 
-    changeStatus(isSelected, currentId) {
-      this.isSelected = isSelected
-      if (currentId !== undefined) {
-        this.currentId = currentId
-      }
-    },
+  function updateCurrentType(item) {
+    currentTypeStore.updateCurrentType(item)
+  }
 
-    addType(item) {
-      this.list.push(item)
-      this.$nextTick(() => {
-        this.currentId = item.id
-        this.updateCurrentType(item)
-        const scrollList = this.$refs.listLayout
-        scrollList.scrollTo({
-          top: scrollList.scrollHeight,
-          behavior: 'smooth'
-        })
-      })
-    },
+  function onItemClicked(item) {
+    currentId.value = item.id
+    updateCurrentType(item)
+  }
+  updateCurrentType(list.value[0])
 
-    modifyItem(newItem) {
-      const oldIndex = this.list.findIndex(item => item.id === newItem.id)
-      if (oldIndex !== -1) {
-        console.log('---newItem', newItem)
-        this.list[oldIndex] = {...this.list[oldIndex], ...newItem}
-        this.currentId = newItem.id
-        this.updateCurrentType(this.list[oldIndex])
-      }
-    },
-
-    onMouseRightClick(ev, item, index) {
-      this.activeIndex = index
-      this.$refs.contextMenu.showContextMenu(ev.clientX, ev.clientY)
-    },
-
-    onContextMenuClosed(index, subIndex) {
-      console.log('---onContextMenuClosed', index, subIndex)
-
-      if (subIndex !== undefined) {
-        // 点击sub-menu
-      } else if (index !== undefined) {
-        // 点击menu
-        const type = this.menuList[index].type
-
-        if (type === 'delete') {
-          let typeItem = this.list[this.activeIndex]
-          // this.list.splice(this.activeIndex, 1)
-          if (typeItem.count > 0) {
-            this.dialog.showDeleteDialog = true
-            this.dialog.title = typeItem.name
-            return
-          } else {
-            this.list.splice(this.activeIndex, 1)
-          }
-        } else if (type === 'showType') {
-          let typeItem = this.list[this.activeIndex]
-          this.$emit('rightClickItem', { typeItem, type, index, subIndex })
-        } else if (type === 'rename') {
-          this.currentEditIndex = this.activeIndex
-        }
-      }
-      // 把右键选中状态置空
-      this.activeIndex = -1
-    },
-
-    onDelTypeDialogMiss(yes) {
-      console.log('---y', yes)
-      this.dialog.showDeleteDialog = false
-      const deleteIndex = this.activeIndex
-      this.activeIndex = -1
-      if (yes) {
-        this.$nextTick(() => {
-          let isDelCurrent = this.list[deleteIndex].id === this.currentId
-          this.list.splice(deleteIndex, 1)
-          // todo 暂时还没做list为空的情况
-          if (isDelCurrent) {
-            this.currentId = this.list[0].id
-            this.updateCurrentType(this.list[0])
-          }
-        })
-      }
-    },
-
-    onNameModify(index, name) {
-      console.log('---name', index, name)
-      this.currentEditIndex = -1
-      this.list[index].name = name
-      if (this.currentId === this.list[index].id) {
-        this.updateCurrentType(this.list[index])
-      }
-
-    },
+  return {
+    list, currentId, currentTypeStore,
+    updateCurrentType, onItemClicked,
   }
 }
+
+function useTypeListDrag(list, refListLayout, refMenuList) {
+  const isDraggingOut = ref(true)
+  const isDragging = ref(false)
+  const overIndex = ref(-2)
+  const menuRect = ref({
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0
+  })
+  const listLayout = reactive({
+    bottom: 0
+  })
+
+  function initMenuRect() {
+    let menuListRect = refMenuList.value.getBoundingClientRect()
+    let { top, bottom, left, right } = menuListRect
+    menuRect.value = { top, bottom, left, right }
+    let layoutRect = refListLayout.value.getBoundingClientRect()
+    listLayout.bottom = layoutRect.bottom
+  }
+
+  function onDragStart(ev, item, index) {
+    isDragging.value = true
+    console.log('----start drag', index)
+  }
+
+  function onDragOver(event, item, index) {
+    overIndex.value = index
+    let ratio = event.offsetY / MENU_ITEM_HEIGHT
+    if (ratio < 1 / 4) {
+      overIndex.value = index - 1
+    } else if (ratio <= 3 / 4) {
+      // todo
+      overIndex.value = -2
+    } else {
+      overIndex.value = index
+    }
+  }
+
+  function onDragEnd(event, index) {
+    isDragging.value = false
+    isDraggingOut.value = true
+    // console.log('----drag end', event, index, overIndex.value)
+    if (overIndex.value === -2) {
+      return
+    }
+    // 要移动的item
+    const moveIndex = index
+    // 要插入的位置
+    let insertIndex = overIndex.value
+    if (moveIndex !== insertIndex) {
+      const moveItem = list.value[moveIndex]
+      list.value.splice(moveIndex, 1);
+      if (moveIndex > insertIndex) {
+        insertIndex++
+      }
+      list.value.splice(insertIndex, 0, moveItem);
+    }
+    isDragging.value = false
+    isDraggingOut.value = true
+    overIndex.value = -2
+  }
+
+  function onDrag(ev) {
+    let { clientX, clientY } = ev
+    if (clientX === 0 && clientY === 0) {
+      return;
+    }
+    if (clientX < menuRect.value.left || clientX > menuRect.value.right) {
+      overIndex.value = -2
+      isDraggingOut.value = true
+      return
+    }
+    if (clientY < menuRect.value.top - MENU_ITEM_HEIGHT / 4) {
+      overIndex.value = -2
+      isDraggingOut.value = true
+      return
+    }
+    if (clientY > listLayout.bottom) {
+      overIndex.value = -2
+      isDraggingOut.value = true
+      return
+    }
+    isDraggingOut.value = false
+    if (clientY > menuRect.value.bottom) {
+      // 最底下
+      overIndex.value = list.value.length - 1
+    }
+  }
+
+  function isShowIndicator(index) {
+    if (!isDragging.value || isDraggingOut.value) {
+      // 不再滑动、或者滑出列表
+      return false
+    }
+    return index === overIndex.value
+  }
+
+  onMounted(initMenuRect)
+
+  return {
+    isDraggingOut, isDragging, overIndex, menuRect, listLayout,
+    initMenuRect, onDragStart, onDragOver, onDragEnd, onDrag, isShowIndicator
+  }
+}
+
+function useContextMenu(list, refContextMenu, emit, updateCurrentType, currentId) {
+  const currentEditIndex = ref(-1)
+  const activeIndex = ref(-2)
+
+  const menuList = reactive([
+    { value: '显示列表信息', type: 'showType' },
+    -1,
+    { value: '在新窗口中打开列表', type: 'none' },
+    -1,
+    {
+      value: '排序方式',
+      subMenu: [
+        { value: '手动' },
+        { value: '创建日期' },
+        { value: '截止日期' },
+        { value: '优先级' },
+        { value: '标题' },
+      ]
+    },
+    -1,
+    { value: '重新命名', type: 'rename' },
+    { value: '删除', type: 'delete' },
+    {
+      value: '移到群组', subMenu: [
+        { value: '群组1' },
+        { value: '群组2' },
+        { value: '群组3' },
+        { value: '群组4' },
+        { value: '群组5' },
+      ]
+    },
+    -1,
+    { value: '共享列表', type: 'none' }
+  ])
+  const dialog = reactive({
+    showDeleteDialog: false,
+    title: ''
+  })
+
+
+  function onMouseRightClick(ev, item, index) {
+    activeIndex.value = index
+    refContextMenu.value.showContextMenu(ev.clientX, ev.clientY)
+  }
+
+  function onContextMenuClosed(index, subIndex) {
+    console.log('---onContextMenuClosed', index, subIndex)
+
+    if (subIndex !== undefined) {
+      // 点击sub-menu
+    } else if (index !== undefined) {
+      // 点击menu
+      const type = menuList[index].type
+
+      if (type === 'delete') {
+        let typeItem = list.value[activeIndex.value]
+        // list.value.splice(activeIndex.value, 1)
+        if (typeItem.count > 0) {
+          dialog.showDeleteDialog = true
+          dialog.title = typeItem.name
+          return
+        } else {
+          list.value.splice(activeIndex.value, 1)
+        }
+      } else if (type === 'showType') {
+        let typeItem = list.value[activeIndex.value]
+        emit('rightClickItem', { typeItem, type, index, subIndex })
+      } else if (type === 'rename') {
+        currentEditIndex.value = activeIndex.value
+      }
+    }
+    // 把右键选中状态置空
+    activeIndex.value = -1
+  }
+
+  function onDelTypeDialogMiss(yes) {
+    dialog.showDeleteDialog = false
+    const deleteIndex = activeIndex.value
+    activeIndex.value = -1
+    if (yes) {
+      nextTick(() => {
+        let isDelCurrent = list.value[deleteIndex].id === currentId.value
+        list.value.splice(deleteIndex, 1)
+        // todo 暂时还没做list为空的情况
+        if (isDelCurrent) {
+          currentId.value = list.value[0].id
+          updateCurrentType(list.value[0])
+        }
+      })
+    }
+  }
+
+  function onNameModify(index, name) {
+    console.log('---name', index, name)
+    currentEditIndex.value = -1
+    list.value[index].name = name
+    if (currentId.value === list.value[index].id) {
+      updateCurrentType(list.value[index])
+    }
+  }
+
+  return {
+    currentEditIndex, activeIndex, menuList, dialog,
+    onMouseRightClick, onContextMenuClosed, onDelTypeDialogMiss, onNameModify
+  }
+}
+
+function changeStatus(isSelected, currentId) {
+  isSelected.value = isSelected
+  if (currentId !== undefined) {
+    currentId.value = currentId
+  }
+}
+
+function addType(item) {
+  list.value.push(item)
+  nextTick(() => {
+    currentId.value = item.id
+    updateCurrentType(item)
+    refListLayout.value.scrollTo({
+      top: refListLayout.value.scrollHeight,
+      behavior: 'smooth'
+    })
+  })
+}
+
+function modifyItem(newItem) {
+  const oldIndex = list.value.findIndex(item => item.id === newItem.id)
+  if (oldIndex !== -1) {
+    console.log('---newItem', newItem)
+    list.value[oldIndex] = { ...list.value[oldIndex], ...newItem }
+    currentId.value = newItem.id
+    updateCurrentType(list.value[oldIndex])
+  }
+}
+
+defineExpose({ changeStatus, addType, modifyItem })
+
+onMounted(() => {
+  const typeStore = useTypeStore()
+  typeStore.setTypeId(100)
+})
 </script>
 <style scoped lang="scss">
 $--el-dialog-bg-color: red;

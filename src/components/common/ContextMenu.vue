@@ -21,110 +21,100 @@
     </template>
   </div>
 </template>
-<script>
+<script setup>
 // menu离body最近的距离
+import { nextTick, reactive, ref } from "vue";
+
 const MIN_WINDOW_MARGIN = 10
 const TAG_YES = '✓ '
-
-export default {
-  name: "ContextMenu",
-
-  props: {
-    menuList: {
-      type: Array,
-      required: true
-    }
-  },
-
-  emits: ['menuDismiss'],
-
-  data() {
-    return {
-      subStyleList: [],
-      position: {
-        x: 0,
-        y: 0
-      },
-      show: false,
-    }
-  },
-  created() {
-    for (let i = 0; i < this.menuList.length; i++) {
-      const menuItem = this.menuList[i]
-      if (menuItem.subMenu && menuItem.subMenu.length > 0) {
-        this.subStyleList[i] = {
-          top: -5,
-          left: 195
-        }
-      }
-    }
-  },
-  mounted() {
-  },
-  methods: {
-    showSubMenu(ev, index) {
-      // todo: 精准点应该是根据当前的位置来计算top还不是对top递增递减
-      let subStyle = this.subStyleList[index]
-      let itemLayout = ev.target
-      let subLayout = itemLayout.querySelector('.context-sub')
-      if (subLayout) {
-        let subRect = subLayout.getBoundingClientRect()
-        let { offsetWidth: bodyWidth, offsetHeight: bodyHeight } = document.body
-        if (subRect.bottom + MIN_WINDOW_MARGIN > bodyHeight) {
-          if (subRect.height - MIN_WINDOW_MARGIN > bodyHeight) {
-            // 如果subMenu太大，保证上面能看到
-            let itemRect = itemLayout.getBoundingClientRect()
-            subStyle.top = MIN_WINDOW_MARGIN - itemRect.top
-          } else {
-            // subMenu太靠下了，需要上移
-            subStyle.top -= (subRect.bottom + MIN_WINDOW_MARGIN - bodyHeight)
-          }
-        }
-
-        if (subRect.right + MIN_WINDOW_MARGIN > bodyWidth) {
-          let itemRect = itemLayout.getBoundingClientRect()
-          subStyle.left = -itemRect.width
-        }
-      }
-    },
-
-    showContextMenu(x = 0, y = 0) {
-      this.show = true
-      this.$nextTick(() => {
-        // 暂时只调整y值
-        let height = this.$refs.root.offsetHeight
-        let bodyHeight = document.body.offsetHeight
-        if (y + height + MIN_WINDOW_MARGIN > bodyHeight) {
-          y = bodyHeight - height - MIN_WINDOW_MARGIN
-        }
-        // todo：这里右键以后还会触发outside，导致show=false，所以改一点点x、y值、防止触发outside
-        this.position = { x: x - 2, y: y - 2 }
-      })
-
-    },
-
-    hide() {
-      this.show = false
-    },
-
-    onClickMenuItem(index) {
-      this.hide()
-      this.$emit('menuDismiss', index)
-    },
-    onClickSubmenuItem(index, subIndex) {
-      this.hide()
-      this.$emit('menuDismiss', index, subIndex)
-    },
-    onClickOutside() {
-      if (!this.show) {
-        return
-      }
-      this.$emit('menuDismiss')
-      this.hide()
+const props = defineProps({
+  menuList: {
+    type: Array,
+    required: true
+  }
+});
+const emit = defineEmits(['menuDismiss'])
+const subStyleList = reactive([])
+for (let i = 0; i < props.menuList.length; i++) {
+  // eslint-disable-next-line vue/no-setup-props-destructure
+  const menuItem = props.menuList[i]
+  if (menuItem.subMenu && menuItem.subMenu.length > 0) {
+    subStyleList[i] = {
+      top: -5,
+      left: 195
     }
   }
-
 }
+const position = ref({ x: 0, y: 0 })
+const show = ref(false)
+
+function showSubMenu(ev, index) {
+  // todo: 精准点应该是根据当前的位置来计算top还不是对top递增递减
+  let subStyle = subStyleList[index]
+  let itemLayout = ev.target
+  let subLayout = itemLayout.querySelector('.context-sub')
+  if (subLayout) {
+    let subRect = subLayout.getBoundingClientRect()
+    let { offsetWidth: bodyWidth, offsetHeight: bodyHeight } = document.body
+    if (subRect.bottom + MIN_WINDOW_MARGIN > bodyHeight) {
+      if (subRect.height - MIN_WINDOW_MARGIN > bodyHeight) {
+        // 如果subMenu太大，保证上面能看到
+        let itemRect = itemLayout.getBoundingClientRect()
+        subStyle.top = MIN_WINDOW_MARGIN - itemRect.top
+      } else {
+        // subMenu太靠下了，需要上移
+        subStyle.top -= (subRect.bottom + MIN_WINDOW_MARGIN - bodyHeight)
+      }
+    }
+
+    if (subRect.right + MIN_WINDOW_MARGIN > bodyWidth) {
+      let itemRect = itemLayout.getBoundingClientRect()
+      subStyle.left = -itemRect.width
+    }
+  }
+}
+
+function showContextMenu(x = 0, y = 0) {
+  show.value = true
+  nextTick(() => {
+    // 暂时只调整y值
+    let height = this.$refs.root.offsetHeight
+    let bodyHeight = document.body.offsetHeight
+    if (y + height + MIN_WINDOW_MARGIN > bodyHeight) {
+      y = bodyHeight - height - MIN_WINDOW_MARGIN
+    }
+    // todo：这里右键以后还会触发outside，导致show=false，所以改一点点x、y值、防止触发outside
+    position.value = { x: x - 2, y: y - 2 }
+  })
+}
+
+defineExpose({
+  showContextMenu
+})
+
+function hide() {
+  show.value = false
+}
+
+function onClickMenuItem(index) {
+  hide()
+  emit('menuDismiss', index)
+}
+
+function onClickSubmenuItem(index, subIndex) {
+  hide()
+  emit('menuDismiss', index, subIndex)
+}
+
+function onClickOutside() {
+  if (!show.value) {
+    return
+  }
+  emit('menuDismiss')
+  hide()
+}
+</script>
+<script>
 </script>
 <style scoped lang="scss">
 .context-root-bg {

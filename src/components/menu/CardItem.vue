@@ -8,78 +8,65 @@
     <span class="count">{{ count }}</span>
   </div>
 </template>
-<script>
+<script setup>
 import dayjs from "dayjs";
+import { TYPE_ALL, TYPE_TODAY, TYPE_TODO } from "@/components/menu/menuConstants";
+import { computed, ref } from "vue";
 
-export const TYPE_TODAY = 1
-export const TYPE_TODO = 2
-export const TYPE_ALL = 3
-
-export default {
-  props: {
-    cardType: {
-      type: Number,
-      default: TYPE_TODAY
-    },
-    count: {
-      type: Number,
-      default: 0
-    },
-    isSelected: {
-      type: Boolean,
-      default: false,
-    }
+const props = defineProps({
+  cardType: {
+    type: Number,
+    default: TYPE_TODAY
   },
-  name: "CardItem",
-  created() {
-    this.currentDay = dayjs().format('D')
+  count: {
+    type: Number,
+    default: 0
   },
-  data() {
-    return {
-      currentDay: 1,
-    }
-  },
-  computed: {
-    imgSrc() {
-      let iconName
-      switch (this.cardType) {
-        case TYPE_TODO:
-          iconName = 'ic_plan'
-          break
-        case TYPE_ALL:
-          iconName = 'ic_all'
-          break
-        case TYPE_TODAY:
-        default:
-          iconName = 'ic_today'
-          break
-      }
-      return `src/assets/svg/${ iconName + (this.isSelected ? '_selected' : '') }.svg`
-    },
-
-    showText() {
-      switch (this.cardType) {
-        case TYPE_TODO:
-          return '计划'
-        case TYPE_ALL:
-          return '全部'
-        case TYPE_TODAY:
-        default:
-          return '今天'
-      }
-    },
-
-    classObj() {
-      return {
-        selected: this.isSelected,
-        unselected: !this.isSelected,
-        today: this.cardType === TYPE_TODAY,
-        plan: this.cardType === TYPE_TODO,
-        all: this.cardType === TYPE_ALL,
-      }
-    }
+  isSelected: {
+    type: Boolean,
+    default: false,
   }
-}
+})
+
+const currentDay = ref(dayjs().format('D'))
+const imgSrc = computed(() => {
+  let iconName
+  switch (props.cardType) {
+    case TYPE_TODO:
+      iconName = 'ic_plan'
+      break
+    case TYPE_ALL:
+      iconName = 'ic_all'
+      break
+    case TYPE_TODAY:
+    default:
+      iconName = 'ic_today'
+      break
+  }
+  return `src/assets/svg/${ iconName + (props.isSelected ? '_selected' : '') }.svg`
+})
+
+const showText = computed(() => {
+  switch (props.cardType) {
+    case TYPE_TODO:
+      return '计划'
+    case TYPE_ALL:
+      return '全部'
+    case TYPE_TODAY:
+    default:
+      return '今天'
+  }
+})
+
+const classObj = computed(() => {
+  return {
+    selected: props.isSelected,
+    unselected: !props.isSelected,
+    today: props.cardType === TYPE_TODAY,
+    plan: props.cardType === TYPE_TODO,
+    all: props.cardType === TYPE_ALL,
+  }
+})
 </script>
 <style scoped lang="scss">
 .card-layout {

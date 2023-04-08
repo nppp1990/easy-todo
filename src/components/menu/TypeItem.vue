@@ -1,7 +1,7 @@
 <template>
   <div>
     <circle-icon class="circle" :svg-name="svgName" :color="color" />
-    <input v-if="edit" v-model="nameFromInput" ref="input"
+    <input v-if="edit" v-model="nameFromInput" ref="refInput"
            @focusout="$emit('modifyName', nameFromInput)"
            @keydown.enter="$emit('modifyName', nameFromInput)"
            @click.stop />
@@ -9,55 +9,45 @@
     <span class="count">{{ count }}</span>
   </div>
 </template>
-<script>
+<script setup>
 import CircleIcon from "@/components/common/CircleIcon.vue";
+import { nextTick, ref, watch } from "vue";
 
-export default {
-  name: "TypeItem",
-  components: {
-    CircleIcon,
+const props = defineProps({
+  name: {
+    type: String,
+    required: true
   },
-  props: {
-    name: {
-      type: String,
-      required: true
-    },
-    count: {
-      type: Number,
-      default: 0
-    },
-    color: {
-      type: String,
-      required: true
-    },
-    svgName: {
-      type: String,
-      required: true
-    },
-    edit: {
-      type: Boolean,
-      default: true,
-    }
+  count: {
+    type: Number,
+    default: 0
   },
-  // emits: ['update:edit'],
-  data() {
-    return {
-      nameFromInput: this.name
-    }
+  color: {
+    type: String,
+    required: true
   },
-  watch: {
-    edit(newEdit) {
-      if (newEdit) {
-        this.nameFromInput = this.name
-        this.$nextTick(() => {
-          this.$refs.input.focus()
-          this.$refs.input.selectionStart = 0
-          this.$refs.input.selectionEnd = this.nameFromInput.length
-        })
-      }
-    }
+  svgName: {
+    type: String,
+    required: true
   },
-}
+  edit: {
+    type: Boolean,
+    default: true,
+  }
+})
+
+const nameFromInput = ref(props.name)
+const refInput = ref(null)
+watch(() => props.edit, (newEdit) => {
+  if (newEdit) {
+    nameFromInput.value = props.name
+    nextTick(() => {
+      refInput.value.focus()
+      refInput.value.selectionStart = 0
+      refInput.value.selectionEnd = nameFromInput.value.length
+    })
+  }
+})
 </script>
 <style scoped lang="scss">
 </style>
