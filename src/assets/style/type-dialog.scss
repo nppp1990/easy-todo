@@ -1,4 +1,4 @@
-.el-dialog {
+::v-deep .el-dialog {
   border-radius: 10px;
 
   .el-dialog__header {
@@ -161,37 +161,7 @@
   }
 }
 
-.el-popper.is-light .el-popper__arrow::before {
+
+:deep(.el-popper.is-light.el-popover) .el-popper__arrow::before {
   background-color: #dadada;
-}
-
-.el-popper.is-light {
-  background-color: #dadada;
-  padding: 4px;
-
-  .type-grid {
-    display: grid;
-    grid-template-columns: repeat(6, 44px);
-
-    .icon-wrapper {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      border: 1px solid #808080;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 2px;
-      margin: 4px;
-
-      .icon {
-        width: 100%;
-        height: 100%;
-      }
-
-      &.icon-wrapper.unselected {
-        border-color: transparent;
-      }
-    }
-  }
 }

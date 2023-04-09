@@ -1,5 +1,13 @@
 @import "src/assets/style/type-list.scss";
-@import "src/assets/style/type-dialog.scss";
+//@import "src/assets/style/type-dialog.scss";
+.el-popper.is-light.el-popover {
+  background-color: #dadada;
+  padding: 4px;
+}
+
+.el-popper.is-light.el-popover .el-popper__arrow::before {
+  background-color: #dadada;
+}
 
 .main-container {
   display: flex;

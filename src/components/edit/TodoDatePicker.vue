@@ -1,0 +1,90 @@
+<template>
+  <div ref="rootRef">
+    <el-date-picker
+      ref="dataPickerRef"
+      v-model="date"
+      placeholder="添加日期"
+      size="small"
+      :prefix-icon="datePrefix"
+      @blur="isActive = false"
+      @focus="isActive = true"
+      value-format="YYYY-MM-DD"
+      :format="dateFormat">
+    </el-date-picker>
+  </div>
+</template>
+<script setup>
+import dayjs from "dayjs";
+import { computed, h, onMounted, ref } from "vue";
+
+const date = ref('')
+const dataPickerRef = ref(null)
+const rootRef = ref(null)
+const isActive = ref(false)
+
+const datePrefix = computed(() => {
+  return h('img', {
+    src: `src/assets/svg/ic_calendar_${ isActive.value ? '' : 'un' }selected.svg`,
+    class: "icon",
+    alt: ""
+  })
+})
+
+const dateFormat = computed(() => {
+  const curDate = dayjs(date.value, 'YYYY-MM-DD')
+  if (curDate.isToday()) {
+    return '今天'
+  }
+  if (curDate.isYesterday()) {
+    return '昨天'
+  }
+
+  if (curDate.isTomorrow()) {
+    return '明天'
+  }
+  return 'YYYY/MM/DD'
+})
+
+onMounted(()=>{
+  const input = rootRef.value.getElementsByTagName('input')[0]
+  input.addEventListener('change', ()=>{
+    let inputValue = input.value.trim()
+    if (inputValue === '今天') {
+      date.value = dayjs().format()
+      dataPickerRef.value.handleClose()
+      return
+    }
+    if (inputValue === '明天') {
+      date.value = dayjs().add(1, 'day').format()
+      dataPickerRef.value.handleClose()
+      return
+    }
+    if (inputValue === '昨天') {
+      date.value = dayjs().add(-1, 'day').format()
+      dataPickerRef.value.handleClose()
+    }
+  })
+})
+</script>
+<style scoped lang="scss">
+:deep(.el-date-editor.el-input, .el-date-editor.el-input__wrapper) {
+  width: 120px;
+  height: 22px;
+
+  .el-input__wrapper {
+    box-shadow: none;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+
+    .icon {
+      width: 10px;
+      height: 10px;
+    }
+
+    .el-input__inner {
+      font-size: 13px;
+      color: var(--todo-black1);
+    }
+  }
+}
+</style>

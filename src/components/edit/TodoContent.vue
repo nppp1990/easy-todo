@@ -1,15 +1,15 @@
 <template>
   <div class="content-layout">
     <title-layout v-bind="currentType" />
-    12345
+    <edit-layout class="edit-layout" />
   </div>
 </template>
 <script setup>
 import TitleLayout from "@/components/edit/TitleLayout.vue";
-// import { TYPE_COLOR_LIST } from "@/components/menu/menuConstants";
 import { useCurrentTypeStore } from "@/store/currentType";
 import { computed } from "vue";
-// const colorList = TYPE_COLOR_LIST
+import EditLayout from "@/components/edit/EditLayout.vue";
+
 const currentTypeStore = useCurrentTypeStore()
 
 const currentType = computed(() => {
@@ -21,5 +21,9 @@ const currentType = computed(() => {
 .content-layout {
   display: flex;
   flex-direction: column;
+
+  .edit-layout {
+    flex: 1;
+  }
 }
 </style>

@@ -128,8 +128,35 @@ const autoFocus = () => {
     nameInput.value.focus()
   })
 }
-defineExpose({autoFocus})
-
+defineExpose({ autoFocus })
 </script>
-<style scoped>
+<style scoped lang="scss">
+
+.type-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 44px);
+
+  .icon-wrapper {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid #808080;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2px;
+    margin: 4px;
+
+    .icon {
+      width: 100%;
+      height: 100%;
+    }
+
+    &.icon-wrapper.unselected {
+      border-color: transparent;
+    }
+  }
+}
+
+
 </style>

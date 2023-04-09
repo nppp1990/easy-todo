@@ -114,7 +114,8 @@ const addType = () => {
   }
 }
 </script>
-<style scoped lang="scss">
+<style scoped lang="scss" >
+@import "@/assets/style/type-dialog.scss";
 .menu-layout {
   display: flex;
   flex-direction: column;

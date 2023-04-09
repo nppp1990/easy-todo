@@ -30,7 +30,7 @@ const colorList = ref(TYPE_COLOR_LIST)
 </script>
 <style scoped lang="scss">
 .title-layout {
-  height: 120px;
+  height: 100px;
   position: relative;
 
   .add {

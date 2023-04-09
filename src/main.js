@@ -10,6 +10,14 @@ import { createPinia } from "pinia";
 
 const app = createApp(App)
 
+import dayjs from "dayjs";
+import isToday from "dayjs/plugin/isToday"
+import isYesterday from "dayjs/plugin/isYesterday"
+import isTomorrow from "dayjs/plugin/isTomorrow"
+dayjs.extend(isToday)
+dayjs.extend(isYesterday)
+dayjs.extend(isTomorrow)
+
 app.use(router)
 app.use(ElementPlus)
 app.directive('click-outside', ClickOutside)
