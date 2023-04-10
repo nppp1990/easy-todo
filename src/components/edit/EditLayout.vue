@@ -1,6 +1,6 @@
 <template>
   <div class="edit-root">
-    <span @click="test">没有提醒事项</span>
+    <span>没有提醒事项</span>
     <edit-item v-for="(item, index) in todoList" :key="index"
                v-model:name="item.name"
                v-model:date="item.date"
@@ -30,21 +30,12 @@ for (let i = 0; i < 3; i++) {
 const currentShowIndex = ref(-1)
 
 function collapseChanged(item, index) {
-  console.log('----eee111', index, item.showExtra)
   if (item.showExtra && currentShowIndex.value !== index) {
     if (currentShowIndex.value > -1) {
       todoList[currentShowIndex.value].showExtra = false
     }
     currentShowIndex.value = index
   }
-}
-
-// watch(todoList, ()=>{
-//   console.log('-------eee')
-// })
-
-function test() {
-  console.log('-----', todoList)
 }
 </script>
 <style scoped lang="scss">

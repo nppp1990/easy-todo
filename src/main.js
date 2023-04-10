@@ -2,7 +2,7 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
 import ElementPlus, { ClickOutside } from 'element-plus'
-
+import '@/utils/polyfill'
 import 'element-plus/dist/index.css'
 import './assets/main.css'
 import '@/assets/base/main.scss'
