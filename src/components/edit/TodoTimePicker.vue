@@ -150,7 +150,7 @@ function onBlur() {
 .timer-input {
   display: flex;
   align-items: center;
-  background-color: #f5f5f5;
+  background-color: var(--todo-bg-label);
   border-radius: 4px;
 
   .icon {
@@ -164,9 +164,9 @@ function onBlur() {
     border: none;
     outline: none;
     display: inline-block;
-    width: 86px;
+    width: 60px;
     height: 22px;
-    font-size: 13px;
+    font-size: inherit;
     color: var(--todo-black1);
 
     &::placeholder {

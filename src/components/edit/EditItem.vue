@@ -10,36 +10,66 @@
       </label>
     </div>
     <div class="info-layout">
-      <input class="name" type="text" value="name" @click="test2">
-      <input class="remark" type="text" placeholder="备注">
-      <input type="text" placeholder="添加标签">
-      <div class="other-info">
-        <div class="label input-wrapper">
-          <img src="src/assets/svg/ic_calendar_selected.svg" class="icon" alt="">
-          <input type="text" class="value" placeholder="添加日期">
-          <img src="src/assets/svg/ic_delete.svg" class="del_icon_show" alt="">
+      <input class="name" type="text" v-model="name" @click.stop="onClickSpan">
+      <input class="remark" type="text" placeholder="备注" @click.stop="onClickSpan">
+      <input type="text" placeholder="添加标签" @click.stop="onClickSpan">
+      <el-collapse-transition>
+        <div class="other-info" v-show="showExtra">
+          <todo-date-picker v-model="date" />
+          <todo-time-picker class="label-right" v-model="timer"
+                            :style="`display: ${date.length > 0 ? 'block' : 'none'} `" />
+          <div class="label-layout label label-right">#</div>
+          <div class="label-layout flag label-right" @click="isFlag = !isFlag">
+            <img :src="`src/assets/svg/ic_flag${isFlag ? '_selected' : ''}.svg`" alt="">
+          </div>
         </div>
-        <div class="label label-right input-wrapper">
-          <img src="src/assets/svg/ic_clock_selected.svg" class="icon" alt="">
-          <input type="text" class="value" placeholder="添加时间">
-          <img src="src/assets/svg/ic_delete.svg" class="del_icon_show" alt="">
-        </div>
-        <todo-date-picker class="label-right" v-model="test" />
-        <todo-time-picker class="label-right" v-model="testTimer"/>
-      </div>
+      </el-collapse-transition>
     </div>
   </div>
 </template>
 <script setup>
 import TodoDatePicker from "@/components/edit/TodoDatePicker.vue";
-import { ref } from "vue";
 import TodoTimePicker from "@/components/edit/TodoTimePicker.vue";
+import { defineAttrFromProps } from "@/utils/vueUtils";
 
-const test = ref('2022/01/03')
-const testTimer = ref('12:03')
+const props = defineProps({
+  name: {
+    type: String,
+    required: true
+  },
+  date: {
+    type: String,
+    default: ''
+  },
+  timer: {
+    type: String,
+    default: ''
+  },
+  isFlag: {
+    type: Boolean,
+    default: false,
+  },
+  showExtra: {
+    type: Boolean,
+    default: false,
+  }
+})
+const emit = defineEmits([
+  'update:name',
+  'update:date',
+  'update:timer',
+  'update:isFlag',
+  'update:showExtra'
+])
 
-const test2 = () => {
-  console.log(test.value)
+const name = defineAttrFromProps(props, emit, 'name')
+const date = defineAttrFromProps(props, emit, 'date')
+const timer = defineAttrFromProps(props, emit, 'timer')
+const isFlag = defineAttrFromProps(props, emit, 'isFlag')
+const showExtra = defineAttrFromProps(props, emit, 'showExtra')
+
+function onClickSpan() {
+  showExtra.value = true
 }
 </script>
 <style scoped lang="scss">
@@ -151,54 +181,40 @@ const test2 = () => {
       margin-top: 2px;
       height: 22px;
       display: flex;
+      font-size: 13px;
 
-      .label {
-        height: 100%;
+      .label-layout {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 22px;
+        padding: 0 6px;
+        background-color: var(--todo-bg-label);
+        border-radius: 4px;
+        color: #2C3E50;
+
+        &.label {
+          color: var(--el-input-placeholder-color);
+        }
+
+        &.flag {
+          padding: 0 3px;
+
+          img {
+            width: 14px;
+            height: 14px;
+          }
+        }
+
+
       }
+
 
       .label-right {
         margin-left: 8px;
       }
 
-      .label.input-wrapper {
-        display: flex;
-        align-items: center;
-        background-color: #f5f5f5;
-        border-radius: 4px;
 
-        .icon {
-          width: 8px;
-          height: 8px;
-          margin: 0 6px;
-        }
-
-        .del_icon_show {
-          width: 12px;
-          height: 12px;
-          margin: 0 6px;
-        }
-
-        .value {
-          background: none;
-          border: none;
-          outline: none;
-          display: inline-block;
-          width: 60px;
-          height: 20px;
-          font-size: 13px;
-          color: var(--todo-black1);
-
-          &::placeholder {
-            font-size: 13px;
-            color: var(--todo-gray4);
-          }
-
-          &:placeholder-shown + .del_icon_show {
-
-            visibility: hidden;
-          }
-        }
-      }
     }
   }
 }

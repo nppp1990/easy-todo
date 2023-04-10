@@ -91,7 +91,7 @@ onMounted(() => {
 
   .el-input__wrapper {
     box-shadow: none;
-    background-color: #f5f5f5;
+    background-color: var(--todo-bg-label);
     border-radius: 4px;
 
     .icon {
