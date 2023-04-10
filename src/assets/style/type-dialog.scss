@@ -1,4 +1,4 @@
-::v-deep .el-dialog {
+:deep(.el-dialog) {
   border-radius: 10px;
 
   .el-dialog__header {
@@ -159,9 +159,4 @@
       }
     }
   }
-}
-
-
-:deep(.el-popper.is-light.el-popover) .el-popper__arrow::before {
-  background-color: #dadada;
 }

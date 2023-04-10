@@ -52,7 +52,7 @@
     }
 
     &.item-selected {
-      background-color: #54a3fd;
+      background-color: var(--todo-bg-blue-selected);
 
       .name {
         color: white;

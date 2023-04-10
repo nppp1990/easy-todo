@@ -2,7 +2,7 @@
   <div class="edit-root">
     <span>没有提醒事项</span>
     <edit-item />
-    <edit-item />
+<!--    <edit-item />-->
   </div>
 </template>
 <script>

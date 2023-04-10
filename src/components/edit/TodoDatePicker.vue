@@ -6,6 +6,7 @@
       placeholder="添加日期"
       size="small"
       :prefix-icon="datePrefix"
+      :clear-icon="dateClearIcon"
       @blur="isActive = false"
       @focus="isActive = true"
       value-format="YYYY-MM-DD"
@@ -17,7 +18,18 @@
 import dayjs from "dayjs";
 import { computed, h, onMounted, ref } from "vue";
 
-const date = ref('')
+const props = defineProps(['modelValue'])
+const emit = defineEmits(['update:modelValue'])
+const date = computed({
+  get() {
+    return props.modelValue
+  },
+  set(value) {
+    emit('update:modelValue', value)
+  }
+})
+
+console.log('---attrs', date.value)
 const dataPickerRef = ref(null)
 const rootRef = ref(null)
 const isActive = ref(false)
@@ -28,6 +40,12 @@ const datePrefix = computed(() => {
     class: "icon",
     alt: ""
   })
+})
+
+const dateClearIcon = h('img', {
+  src: "src/assets/svg/ic_delete.svg",
+  class: "icon",
+  alt: ""
 })
 
 const dateFormat = computed(() => {
@@ -45,9 +63,9 @@ const dateFormat = computed(() => {
   return 'YYYY/MM/DD'
 })
 
-onMounted(()=>{
+onMounted(() => {
   const input = rootRef.value.getElementsByTagName('input')[0]
-  input.addEventListener('change', ()=>{
+  input.addEventListener('change', () => {
     let inputValue = input.value.trim()
     if (inputValue === '今天') {
       date.value = dayjs().format()

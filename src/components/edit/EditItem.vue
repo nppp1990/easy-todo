@@ -10,7 +10,7 @@
       </label>
     </div>
     <div class="info-layout">
-      <input class="name" type="text" value="name">
+      <input class="name" type="text" value="name" @click="test2">
       <input class="remark" type="text" placeholder="备注">
       <input type="text" placeholder="添加标签">
       <div class="other-info">
@@ -24,81 +24,23 @@
           <input type="text" class="value" placeholder="添加时间">
           <img src="src/assets/svg/ic_delete.svg" class="del_icon_show" alt="">
         </div>
-        <todo-date-picker class="label-right" />
+        <todo-date-picker class="label-right" v-model="test" />
+        <todo-time-picker class="label-right" v-model="testTimer"/>
       </div>
     </div>
   </div>
 </template>
 <script setup>
-// const value1 = ref('')
-// const dataPicker = ref(null)
-// const test = ref(false)
-
-// const vPickFormat = {
-//   mounted(el, binding, vnode, prevVnode) {
-//     // console.log('-----', el, binding, vnode, prevVnode)
-//     // const $this = $($(el).children('input')[0])
-//     const inputs = el.getElementsByTagName('input')
-//     if (inputs) {
-//       const input = inputs[0]
-//       const { ctx: that, data } = vnode
-//       input.addEventListener('change', (res)=>{
-//         console.log('---', res)
-//         let inputValue = input.value.trim()
-//         if (inputValue === '今天') {
-//           value1.value = dayjs().format()
-//           dataPicker.value.handleClose()
-//           return
-//         }
-//         if (inputValue === '明天') {
-//           value1.value = dayjs().add(1, 'day').format()
-//           dataPicker.value.handleClose()
-//           return
-//         }
-//         if (inputValue === '昨天') {
-//           value1.value = dayjs().add(-1, 'day').format()
-//           dataPicker.value.handleClose()
-//         }
-//       })
-//       // input.addEventListener('keyup', (v)=>{
-//       //   console.log('-----xxx', v)
-//       //   if (v.code === 'Enter') {
-//       //
-//       //     value1.value = '2023/04/05'
-//       //   }
-//       // })
-//     }
-//   },
-// }
-//
-// const dataPrefix = computed(() => {
-//   console.log('-----', test.value)
-//   return h('img', {
-//     src: `src/assets/svg/ic_calendar_${ test.value ? '' : 'un' }selected.svg`,
-//     class: "icon",
-//     alt: ""
-//   })
-// })
-//
-// const dateFormat = computed(() => {
-//   const curDate = dayjs(value1.value, 'YYYY-MM-DD')
-//   if (curDate.isToday()) {
-//     return '今天'
-//   }
-//   if (curDate.isYesterday()) {
-//     return '昨天'
-//   }
-//
-//   if (curDate.isTomorrow()) {
-//     return '明天'
-//   }
-//   return 'YYYY/MM/DD'
-// })
-// const testC = () => {
-//   test.value = false
-//   console.log('----val', value1.value)
-// }
 import TodoDatePicker from "@/components/edit/TodoDatePicker.vue";
+import { ref } from "vue";
+import TodoTimePicker from "@/components/edit/TodoTimePicker.vue";
+
+const test = ref('2022/01/03')
+const testTimer = ref('12:03')
+
+const test2 = () => {
+  console.log(test.value)
+}
 </script>
 <style scoped lang="scss">
 .edit-item-root {

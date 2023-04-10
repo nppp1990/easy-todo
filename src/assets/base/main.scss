@@ -1,12 +1,15 @@
 @import "src/assets/style/type-list.scss";
-//@import "src/assets/style/type-dialog.scss";
-.el-popper.is-light.el-popover {
+.el-popper.is-light.el-popover:has(.type-grid) {
   background-color: #dadada;
   padding: 4px;
 }
 
-.el-popper.is-light.el-popover .el-popper__arrow::before {
+.el-popper.is-light.el-popover:has(.type-grid) .el-popper__arrow::before {
   background-color: #dadada;
+}
+
+.el-popper.is-light.el-popover:has(.timer-tip-layout) {
+  padding: 6px;
 }
 
 .main-container {

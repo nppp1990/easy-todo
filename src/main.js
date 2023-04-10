@@ -14,9 +14,12 @@ import dayjs from "dayjs";
 import isToday from "dayjs/plugin/isToday"
 import isYesterday from "dayjs/plugin/isYesterday"
 import isTomorrow from "dayjs/plugin/isTomorrow"
+import customParseFormat from "dayjs/plugin/customParseFormat"
+
 dayjs.extend(isToday)
 dayjs.extend(isYesterday)
 dayjs.extend(isTomorrow)
+dayjs.extend(customParseFormat)
 
 app.use(router)
 app.use(ElementPlus)
