@@ -54,9 +54,12 @@
 import TypeItem from "@/components/menu/TypeItem.vue";
 import ContextMenu from "@/components/common/ContextMenu.vue";
 import { TYPE_COLOR_LIST } from "@/components/menu/menuConstants";
-import { nextTick, onMounted, reactive, ref } from "vue";
+import { nextTick, onMounted, reactive, ref, watch } from "vue";
 import { useCurrentTypeStore } from "@/store/currentType";
 import { useTypeStore } from "@/store/type";
+import { getTypeList, updateTypeList } from "@/storage/type";
+import { getLastTypeId, saveLastTypeId } from "@/storage/history";
+import { getTypeItemById } from "@/utils/typeUtils";
 
 // 这里和.menu-item-layout的高度保持同步
 const MENU_ITEM_HEIGHT = 36
@@ -86,25 +89,18 @@ const {
 } = useContextMenu(list, refContextMenu, emit, updateCurrentType, currentId)
 
 function useTypeList() {
-  const list = ref([
-    { colorIndex: 1, svgIndex: 0, name: 'name1', count: 2, id: 1 },
-    { colorIndex: 7, svgIndex: 1, name: 'name2', count: 0, id: 2 },
-    { colorIndex: 4, svgIndex: 1, name: 'name3', count: 1, id: 3 },
-    { colorIndex: 1, svgIndex: 2, name: 'name4', count: 4, id: 4 },
-    { colorIndex: 1, svgIndex: 2, name: 'name5', count: 4, id: 5 },
-    { colorIndex: 1, svgIndex: 12, name: 'name6', count: 4, id: 6 },
-    { colorIndex: 10, svgIndex: 22, name: 'xxx1', count: 4, id: 7 },
-    { colorIndex: 10, svgIndex: 22, name: 'xxx2', count: 4, id: 8 },
-    { colorIndex: 10, svgIndex: 22, name: 'xxx3', count: 4, id: 9 },
-    { colorIndex: 10, svgIndex: 22, name: 'xxx4xx', count: 4, id: 10 },
-    { colorIndex: 10, svgIndex: 22, name: 'xxx43', count: 4, id: 11 },
-    { colorIndex: 10, svgIndex: 22, name: 'xxx42', count: 4, id: 12 },
-    { colorIndex: 10, svgIndex: 22, name: 'xxx41', count: 4, id: 13 },
-    { colorIndex: 10, svgIndex: 22, name: 'xxx45', count: 4, id: 14 },
-  ])
-  const currentId = ref(list.value[0].id)
-
   const currentTypeStore = useCurrentTypeStore()
+
+  const list = ref(getTypeList())
+  watch(list, (newValue) => {
+    updateTypeList(newValue)
+  }, { deep: true })
+  // 上一次选中的typeId
+  const currentId = ref(getLastTypeId())
+  watch(currentId, (id) => {
+    saveLastTypeId(id)
+  })
+  updateCurrentType(getTypeItemById(list.value, currentId.value))
 
   function updateCurrentType(item) {
     currentTypeStore.updateCurrentType(item)
@@ -114,7 +110,6 @@ function useTypeList() {
     currentId.value = item.id
     updateCurrentType(item)
   }
-  updateCurrentType(list.value[0])
 
   return {
     list, currentId, currentTypeStore,
@@ -175,11 +170,11 @@ function useTypeListDrag(list, refListLayout, refMenuList) {
     let insertIndex = overIndex.value
     if (moveIndex !== insertIndex) {
       const moveItem = list.value[moveIndex]
-      list.value.splice(moveIndex, 1);
+      list.value.splice(moveIndex, 1)
       if (moveIndex > insertIndex) {
         insertIndex++
       }
-      list.value.splice(insertIndex, 0, moveItem);
+      list.value.splice(insertIndex, 0, moveItem)
     }
     isDragging.value = false
     isDraggingOut.value = true
@@ -368,8 +363,8 @@ function modifyItem(newItem) {
 defineExpose({ changeStatus, addType, modifyItem })
 
 onMounted(() => {
-  const typeStore = useTypeStore()
-  typeStore.setTypeId(100)
+  // const typeStore = useTypeStore()
+  // typeStore.setTypeId(100)
 })
 </script>
 <style scoped lang="scss">

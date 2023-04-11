@@ -2,6 +2,8 @@ import { defineStore } from "pinia";
 import { ref } from "vue";
 import { createType } from "@/service";
 
+
+// { colorIndex: 1, svgIndex: 0, name: 'name1', count: 2, id: 1 }
 export const useTypeStore = defineStore('type', () => {
   const incrementId = ref(0)
   const addType = async (typeInfo) => {
@@ -16,4 +18,4 @@ export const useTypeStore = defineStore('type', () => {
   return {
     incrementId, addType, setTypeId
   }
-})
+}, { persist: true })

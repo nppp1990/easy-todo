@@ -14,7 +14,7 @@
 </template>
 <script setup>
 import EditItem from "@/components/edit/EditItem.vue";
-import { reactive, ref, watch } from "vue";
+import { reactive, ref } from "vue";
 
 const todoList = reactive([])
 for (let i = 0; i < 3; i++) {
@@ -27,7 +27,6 @@ for (let i = 0; i < 3; i++) {
     isFlag: false,
   })
 }
-
 
 const currentShowIndex = ref(-1)
 
