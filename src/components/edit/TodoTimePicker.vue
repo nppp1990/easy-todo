@@ -179,6 +179,7 @@ function onBlur() {
       height: 10px;
       margin: 0 6px;
       visibility: hidden;
+      cursor: pointer;
     }
   }
 

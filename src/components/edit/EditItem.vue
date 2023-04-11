@@ -11,18 +11,11 @@
     </div>
     <div class="info-layout">
       <input class="name" type="text" v-model="name" @click.stop="onClickSpan">
-      <template v-if="!showExtra">
-        <input v-if="testNote.length > 0"
-               :value="testNote" class="remark" type="text" placeholder="备注" @click.stop="onClickSpan">
-
-<!--        <input v-if="testLabel.length > 0"-->
-<!--               :value="testLabel" type="text" placeholder="添加标签"  @click.stop="onClickSpan">-->
-      </template>
       <!--      <div v-show="!showExtra">testXXXX</div>-->
       <el-collapse-transition>
         <div style="display: flex; flex-direction: column" v-show="showExtra">
-          <input class="remark" type="text" placeholder="备注" @click.stop="onClickSpan" v-model="testNote">
-<!--          <input type="text" placeholder="添加标签" v-model="testLabel">-->
+          <input class="remark" type="text" placeholder="备注" @click.stop="onClickSpan" v-model="note">
+          <!--          <input type="text" placeholder="添加标签" v-model="testLabel">-->
           <div class="other-info">
             <todo-date-picker v-model="date" />
             <todo-time-picker class="label-right" v-model="timer"
@@ -34,6 +27,13 @@
           </div>
         </div>
       </el-collapse-transition>
+      <template v-if="!showExtra">
+        <input v-show="note.length > 0"
+               :value="note" class="remark" type="text" placeholder="备注" @click.stop="onClickSpan">
+        <span v-show="date.length > 0" class="extra_content" @click.stop="onClickSpan">{{ extraContent }}</span>
+        <!--        <input v-if="testLabel.length > 0"-->
+        <!--               :value="testLabel" type="text" placeholder="添加标签"  @click.stop="onClickSpan">-->
+      </template>
       <div class="divider" />
     </div>
   </div>
@@ -42,12 +42,17 @@
 import TodoDatePicker from "@/components/edit/TodoDatePicker.vue";
 import TodoTimePicker from "@/components/edit/TodoTimePicker.vue";
 import { defineAttrFromProps } from "@/utils/vueUtils";
-import { ref } from "vue";
+import { computed } from "vue";
+import { getDateStr } from "@/utils/timeUtils";
 
 const props = defineProps({
   name: {
     type: String,
     required: true
+  },
+  note: {
+    type: String,
+    default: ''
   },
   date: {
     type: String,
@@ -68,20 +73,31 @@ const props = defineProps({
 })
 const emit = defineEmits([
   'update:name',
+  'update:note',
   'update:date',
   'update:timer',
   'update:isFlag',
   'update:showExtra'
+
 ])
 
-const testNote = ref('')
-const testLabel = ref('')
-
 const name = defineAttrFromProps(props, emit, 'name')
+const note = defineAttrFromProps(props, emit, 'note')
 const date = defineAttrFromProps(props, emit, 'date')
 const timer = defineAttrFromProps(props, emit, 'timer')
 const isFlag = defineAttrFromProps(props, emit, 'isFlag')
 const showExtra = defineAttrFromProps(props, emit, 'showExtra')
+
+const extraContent = computed(() => {
+  let dateStr = getDateStr(date.value)
+  if (!dateStr) {
+    dateStr = date.value
+  }
+  if (timer.value.length > 0) {
+    return dateStr + ' ' + timer.value
+  }
+  return dateStr
+})
 
 function onClickSpan() {
   showExtra.value = true
@@ -167,7 +183,7 @@ function onClickSpan() {
     flex: 1;
     display: flex;
     flex-direction: column;
-    font-size: 12px;
+    font-size: 13px;
 
     input {
       display: inline-block;
@@ -175,11 +191,11 @@ function onClickSpan() {
       border: none;
       outline: none;
       height: 18px;
-      font-size: 13px;
+      font-size: inherit;
       color: var(--todo-black1);
 
       &::placeholder {
-        font-size: 13px;
+        font-size: inherit;
         color: var(--todo-gray2);
       }
 
@@ -196,7 +212,7 @@ function onClickSpan() {
       margin-top: 2px;
       height: 22px;
       display: flex;
-      font-size: 13px;
+      font-size: inherit;
 
       .label-layout {
         display: flex;
@@ -220,8 +236,6 @@ function onClickSpan() {
             height: 14px;
           }
         }
-
-
       }
 
 
@@ -230,10 +244,16 @@ function onClickSpan() {
       }
     }
 
+    .extra_content {
+      height: 18px;
+      font-size: inherit;
+      color: var(--el-text-color-placeholder);
+    }
+
     .divider {
       height: 1px;
       width: 100%;
-      background-color: var(--divider-gray1);
+      background-color: var(--divider-gray2);
       margin-top: 6px;
     }
   }

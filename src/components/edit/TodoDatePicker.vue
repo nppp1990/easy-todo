@@ -17,6 +17,7 @@
 <script setup>
 import dayjs from "dayjs";
 import { computed, h, onMounted, ref } from "vue";
+import { getDateStr } from "@/utils/timeUtils";
 
 const props = defineProps(['modelValue'])
 const emit = defineEmits(['update:modelValue'])
@@ -49,16 +50,9 @@ const dateClearIcon = h('img', {
 })
 
 const dateFormat = computed(() => {
-  const curDate = dayjs(date.value, 'YYYY-MM-DD')
-  if (curDate.isToday()) {
-    return '今天'
-  }
-  if (curDate.isYesterday()) {
-    return '昨天'
-  }
-
-  if (curDate.isTomorrow()) {
-    return '明天'
+  let dateStr = getDateStr(date.value)
+  if (dateStr) {
+    return dateStr
   }
   return 'YYYY/MM/DD'
 })

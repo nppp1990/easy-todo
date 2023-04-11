@@ -3,6 +3,7 @@
     <span>没有提醒事项</span>
     <edit-item v-for="(item, index) in todoList" :key="index"
                v-model:name="item.name"
+               v-model:note="item.note"
                v-model:date="item.date"
                v-model:timer="item.timer"
                v-model:is-flag="item.isFlag"
@@ -19,6 +20,7 @@ const todoList = reactive([])
 for (let i = 0; i < 3; i++) {
   todoList.push({
     name: 'name' + i,
+    note: '',
     showExtra: false,
     date: '',
     timer: '',
