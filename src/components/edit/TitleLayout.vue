@@ -30,7 +30,7 @@ const colorList = ref(TYPE_COLOR_LIST)
 </script>
 <style scoped lang="scss">
 .title-layout {
-  height: 100px;
+  height: 90px;
   position: relative;
 
   .add {
@@ -72,10 +72,10 @@ const colorList = ref(TYPE_COLOR_LIST)
   }
 
   h1 {
-    font-size: 32px;
+    font-size: 36px;
     color: #157efb;
     position: absolute;
-    top: 54px;
+    top: 34px;
 
     &.title {
       font-weight: bold;

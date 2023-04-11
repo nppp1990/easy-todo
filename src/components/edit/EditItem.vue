@@ -11,19 +11,30 @@
     </div>
     <div class="info-layout">
       <input class="name" type="text" v-model="name" @click.stop="onClickSpan">
-      <input class="remark" type="text" placeholder="备注" @click.stop="onClickSpan">
-      <input type="text" placeholder="添加标签" @click.stop="onClickSpan">
+      <template v-if="!showExtra">
+        <input v-if="testNote.length > 0"
+               :value="testNote" class="remark" type="text" placeholder="备注" @click.stop="onClickSpan">
+
+<!--        <input v-if="testLabel.length > 0"-->
+<!--               :value="testLabel" type="text" placeholder="添加标签"  @click.stop="onClickSpan">-->
+      </template>
+      <!--      <div v-show="!showExtra">testXXXX</div>-->
       <el-collapse-transition>
-        <div class="other-info" v-show="showExtra">
-          <todo-date-picker v-model="date" />
-          <todo-time-picker class="label-right" v-model="timer"
-                            :style="`display: ${date.length > 0 ? 'block' : 'none'} `" />
-          <div class="label-layout label label-right">#</div>
-          <div class="label-layout flag label-right" @click="isFlag = !isFlag">
-            <img :src="`src/assets/svg/ic_flag${isFlag ? '_selected' : ''}.svg`" alt="">
+        <div style="display: flex; flex-direction: column" v-show="showExtra">
+          <input class="remark" type="text" placeholder="备注" @click.stop="onClickSpan" v-model="testNote">
+<!--          <input type="text" placeholder="添加标签" v-model="testLabel">-->
+          <div class="other-info">
+            <todo-date-picker v-model="date" />
+            <todo-time-picker class="label-right" v-model="timer"
+                              :style="`display: ${date.length > 0 ? 'block' : 'none'} `" />
+            <div class="label-layout label label-right">#</div>
+            <div class="label-layout flag label-right" @click="isFlag = !isFlag">
+              <img :src="`src/assets/svg/ic_flag${isFlag ? '_selected' : ''}.svg`" alt="">
+            </div>
           </div>
         </div>
       </el-collapse-transition>
+      <div class="divider" />
     </div>
   </div>
 </template>
@@ -31,6 +42,7 @@
 import TodoDatePicker from "@/components/edit/TodoDatePicker.vue";
 import TodoTimePicker from "@/components/edit/TodoTimePicker.vue";
 import { defineAttrFromProps } from "@/utils/vueUtils";
+import { ref } from "vue";
 
 const props = defineProps({
   name: {
@@ -61,6 +73,9 @@ const emit = defineEmits([
   'update:isFlag',
   'update:showExtra'
 ])
+
+const testNote = ref('')
+const testLabel = ref('')
 
 const name = defineAttrFromProps(props, emit, 'name')
 const date = defineAttrFromProps(props, emit, 'date')
@@ -154,7 +169,7 @@ function onClickSpan() {
     flex-direction: column;
     font-size: 12px;
 
-    & > input {
+    input {
       display: inline-block;
       background: none;
       border: none;
@@ -213,9 +228,16 @@ function onClickSpan() {
       .label-right {
         margin-left: 8px;
       }
+    }
 
-
+    .divider {
+      height: 1px;
+      width: 100%;
+      background-color: var(--divider-gray1);
+      margin-top: 6px;
     }
   }
+
+
 }
 </style>
