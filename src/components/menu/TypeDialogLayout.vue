@@ -1,9 +1,9 @@
 <template>
   <form class="dialog-layout" @submit.prevent="onSubmit">
-    <h4>{{ title }}</h4>
+    <h4>{{ currentTitle }}</h4>
     <div class="name-layout">
       <span>名称：</span>
-      <input type="text" v-model="typeName" ref="nameInput">
+      <input type="text" v-model="currentTypeName" ref="nameInput">
     </div>
     <div class="label-layout">
       <div class="color-layout">
@@ -38,8 +38,8 @@
     <div class="h-divider"></div>
     <div class="button-layout">
       <button class="button-yes"
-              :class="{'able': typeName.length > 0}"
-              :type="typeName.length > 0? 'submit' : 'button'">
+              :class="{'able': currentTypeName.length > 0}"
+              :type="currentTypeName.length > 0? 'submit' : 'button'">
         好
       </button>
       <button class="button-no" type="button" @click="onClickCancel">取消</button>
@@ -49,45 +49,27 @@
 <script setup>
 import CircleIcon from "@/components/common/CircleIcon.vue";
 import { DEFAULT_COLOR_INDEX, DEFAULT_ICON_INDEX, DEFAULT_TITLE, TYPE_COLOR_LIST, TYPE_ICON_SIZE } from "@/components/menu/menuConstants";
-import { ref, watch } from "vue";
+import { ref } from "vue";
 
-const props = defineProps({
-  colorIndex: {
-    type: Number,
-    default: DEFAULT_COLOR_INDEX
-  },
-  iconIndex: {
-    type: Number,
-    default: DEFAULT_ICON_INDEX
-  },
-  name: {
-    type: String,
-    default: '',
-  },
-  title: {
-    type: String,
-    default: DEFAULT_TITLE
-  },
-  typeId: {
-    type: Number,
-  }
-})
 
-const currentColorIndex = ref(props.colorIndex)
-const currentIconIndex = ref(props.iconIndex)
-const typeName = ref(props.name)
+const currentColorIndex = ref(DEFAULT_COLOR_INDEX)
+const currentIconIndex = ref(DEFAULT_ICON_INDEX)
+const currentTypeName = ref('')
+const currentTitle = ref(DEFAULT_TITLE)
+const currentTypeId = ref(-1)
 const showIconList = ref(false)
-const colorList = ref(TYPE_COLOR_LIST)
-const typeIconSize = ref(TYPE_ICON_SIZE)
+const colorList = TYPE_COLOR_LIST
+const typeIconSize = TYPE_ICON_SIZE
 
 const emit = defineEmits(['close'])
 
 
-watch(() => props.typeId, () => {
-  currentColorIndex.value = props.colorIndex
-  currentIconIndex.value = props.iconIndex
-  typeName.value = props.name
-})
+// watch(() => props.name, () => {
+//   console.log('-------xxxx change')
+//   currentColorIndex.value = props.colorIndex
+//   currentIconIndex.value = props.iconIndex
+//   currentTypeName.value = props.name
+// })
 
 const onClickOutside = () => {
   showIconList.value = false
@@ -100,11 +82,11 @@ const onClickCancel = () => {
 const onSubmit = () => {
   showIconList.value = false
   let newItem = {
-    name: typeName.value,
+    name: currentTypeName.value,
     colorIndex: currentColorIndex.value,
-    color: colorList.value[currentColorIndex.value],
+    color: colorList[currentColorIndex.value],
     svgIndex: currentIconIndex.value,
-    id: props.typeId
+    id: currentTypeId.value
   }
   emit('close', newItem)
 }
@@ -128,10 +110,23 @@ const autoFocus = () => {
     nameInput.value.focus()
   })
 }
-defineExpose({ autoFocus })
+const showDialog = (info) => {
+  const {
+    title = DEFAULT_TITLE,
+    name = '',
+    colorIndex = DEFAULT_COLOR_INDEX,
+    iconIndex = DEFAULT_ICON_INDEX,
+    typeId = -1
+  } = info
+  currentTitle.value = title
+  currentTypeName.value = name
+  currentColorIndex.value = colorIndex
+  currentIconIndex.value = iconIndex
+  currentTypeId.value = typeId
+}
+defineExpose({ autoFocus, showDialog })
 </script>
 <style scoped lang="scss">
-
 .type-grid {
   display: grid;
   grid-template-columns: repeat(6, 44px);
@@ -157,6 +152,4 @@ defineExpose({ autoFocus })
     }
   }
 }
-
-
 </style>

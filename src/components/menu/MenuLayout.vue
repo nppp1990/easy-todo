@@ -27,7 +27,7 @@
                width="480px"
                :show-close="false"
                align-center>
-      <type-dialog-layout @close="onDialogClosed" ref="dialogContent" v-bind="typeDialogInfo" />
+      <type-dialog-layout @close="onDialogClosed" ref="dialogContent" />
     </el-dialog>
   </div>
 </template>
@@ -35,20 +35,13 @@
 import CardItem from "@/components/menu/CardItem.vue";
 import TypeListLayout from "@/components/menu/TypeListLayout.vue";
 import TypeDialogLayout from "@/components/menu/TypeDialogLayout.vue";
-import { nextTick, reactive, ref, watch } from "vue";
+import { nextTick, ref, watch } from "vue";
 import { DEFAULT_COLOR_INDEX, DEFAULT_ICON_INDEX, DEFAULT_TITLE } from "@/components/menu/menuConstants";
 import { useTypeStore } from "@/store/type";
 
 const currentCard = ref(1)
 const searchText = ref('')
 const showTypeDialog = ref(false)
-let typeDialogInfo = reactive({
-  name: '',
-  colorIndex: DEFAULT_COLOR_INDEX,
-  iconIndex: DEFAULT_ICON_INDEX,
-  title: DEFAULT_TITLE,
-  typeId: -1,
-})
 
 const dialogContent = ref(null)
 const typeList = ref(null)
@@ -94,28 +87,31 @@ const onTypeListContextSelected = (res) => {
     if (typeItem) {
       showTypeDialog.value = true
       let { colorIndex, svgIndex, name, id } = typeItem
-      typeDialogInfo.title = `"${ name }"简介`
-      typeDialogInfo.name = name
-      typeDialogInfo.colorIndex = colorIndex
-      typeDialogInfo.iconIndex = svgIndex
-      typeDialogInfo.typeId = id
+      nextTick(()=>{
+        dialogContent.value.showDialog({
+          title: `"${ name }"简介`,
+          name,
+          colorIndex,
+          iconIndex: svgIndex,
+          typeId: id,
+        })
+      })
+
     }
   }
 }
 
 const addType = () => {
   showTypeDialog.value = true
-  typeDialogInfo = {
-    name: '',
-    colorIndex: DEFAULT_COLOR_INDEX,
-    iconIndex: DEFAULT_ICON_INDEX,
-    title: DEFAULT_TITLE,
-    typeId: -1,
-  }
+  nextTick(()=>{
+    dialogContent.value.showDialog({})
+  })
+
 }
 </script>
-<style scoped lang="scss" >
+<style scoped lang="scss">
 @import "@/assets/style/type-dialog.scss";
+
 .menu-layout {
   display: flex;
   flex-direction: column;

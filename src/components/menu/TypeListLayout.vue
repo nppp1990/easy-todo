@@ -56,7 +56,6 @@ import ContextMenu from "@/components/common/ContextMenu.vue";
 import { TYPE_COLOR_LIST } from "@/components/menu/menuConstants";
 import { nextTick, onMounted, reactive, ref, watch } from "vue";
 import { useCurrentTypeStore } from "@/store/currentType";
-import { useTypeStore } from "@/store/type";
 import { getTypeList, updateTypeList } from "@/storage/type";
 import { getLastTypeId, saveLastTypeId } from "@/storage/history";
 import { getTypeItemById } from "@/utils/typeUtils";
@@ -317,7 +316,6 @@ function useContextMenu(list, refContextMenu, emit, updateCurrentType, currentId
   }
 
   function onNameModify(index, name) {
-    console.log('---name', index, name)
     currentEditIndex.value = -1
     list.value[index].name = name
     if (currentId.value === list.value[index].id) {
