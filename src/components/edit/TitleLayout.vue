@@ -1,6 +1,6 @@
 <template>
   <div class="title-layout">
-    <div class="add">
+    <div class="add" @click="$emit('clickAdd')">
       <div class="line line-x" />
       <div class="line line-y" />
     </div>
@@ -26,7 +26,8 @@ defineProps({
     required: true
   },
 })
-const colorList = ref(TYPE_COLOR_LIST)
+defineEmits(['clickAdd'])
+const colorList = TYPE_COLOR_LIST
 </script>
 <style scoped lang="scss">
 .title-layout {

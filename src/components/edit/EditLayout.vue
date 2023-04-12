@@ -62,7 +62,7 @@ function handleLastItem() {
   if (currentItem.id === -1) {
     // 如果id为-1表示撤销新建item
     todoList.value.splice(currentShowIndex, 1)
-  } else if (currentItem.name === ''){
+  } else if (currentItem.name === '') {
     // 如果name为空表示删除该todo、所以还要更新存储和count
     todoList.value.splice(currentShowIndex, 1)
     deleteTodo(currentItem)
@@ -80,24 +80,42 @@ function initList(type) {
 
 initList(currentTypeStore.item)
 
+function createItem() {
+  let todoItem = createTodoDoc()
+  // todoItem.showExtra = true
+  // 更新todoList
+  todoList.value.push(todoItem)
+  currentShowIndex = todoList.value.length - 1
+  nextTick(() => {
+    // 为了展示动画，延后把showExtra改变
+    todoList.value[currentShowIndex].showExtra = true
+  })
+}
+
 // 点击空白处
 function onClickBlank() {
   if (currentShowIndex === -1) {
     // 当前没有在编辑状态的todo，点击空白表示新建一个item
-    let todoItem = createTodoDoc()
-    // todoItem.showExtra = true
-    // 更新todoList
-    todoList.value.push(todoItem)
-    currentShowIndex = todoList.value.length - 1
-    nextTick(()=>{
-      // 为了展示动画，延后把showExtra改变
-      todoList.value[currentShowIndex].showExtra = true
-    })
+    createItem()
   } else {
     handleLastItem()
     currentShowIndex = -1
   }
 }
+
+function addTodoItem() {
+  if (currentShowIndex !== -1) {
+    if (todoList.value[currentShowIndex].id === -1) {
+      // 当前为正在编辑的新todo，不作处理
+      return
+    }
+    handleLastItem()
+  }
+  createItem()
+}
+
+defineExpose({ addTodoItem })
+
 
 function saveTodo(todoItem) {
   // 创建的todo持久化
