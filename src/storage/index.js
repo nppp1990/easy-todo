@@ -6,6 +6,10 @@ export function getData(key) {
   return localStorage.getItem(key)
 }
 
+export function removeData(key) {
+  localStorage.removeItem(key)
+}
+
 export function getDataObject(key, defaultValue = null) {
   let res = getData(key)
   if (res) {

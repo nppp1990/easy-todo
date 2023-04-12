@@ -30,7 +30,6 @@ const date = computed({
   }
 })
 
-console.log('---attrs', date.value)
 const dataPickerRef = ref(null)
 const rootRef = ref(null)
 const isActive = ref(false)

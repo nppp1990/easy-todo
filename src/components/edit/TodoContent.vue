@@ -9,12 +9,13 @@ import TitleLayout from "@/components/edit/TitleLayout.vue";
 import { useCurrentTypeStore } from "@/store/currentType";
 import { computed } from "vue";
 import EditLayout from "@/components/edit/EditLayout.vue";
+import { getTodoCount } from "@/utils/typeUtils";
 
 const currentTypeStore = useCurrentTypeStore()
 
 const currentType = computed(() => {
-  const { name: title, count, colorIndex } = currentTypeStore.item
-  return { title, count, colorIndex }
+  const { name: title, colorIndex } = currentTypeStore.item
+  return { title, count: getTodoCount(currentTypeStore.item), colorIndex }
 })
 </script>
 <style scoped lang="scss">

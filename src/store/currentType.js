@@ -7,10 +7,19 @@ export const useCurrentTypeStore = defineStore('currentType', () => {
     svgIndex: 0,
     name: 'name1',
     count: 2,
-    id: 1
+    id: 1,
+    idList: [],
   })
   const updateCurrentType = (typeItem) => {
     item.value = typeItem
   }
-  return { item, updateCurrentType }
+  const addTodoItem = (todoId) => {
+    item.value.idList.push(todoId)
+  }
+
+  const delTodoItem = (todoId) => {
+    item.value.idList.splice(item.value.idList.indexOf(todoId))
+  }
+
+  return { item, updateCurrentType, addTodoItem, delTodoItem }
 })

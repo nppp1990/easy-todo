@@ -77,16 +77,20 @@ const emit = defineEmits([
   'update:date',
   'update:timer',
   'update:isFlag',
-  'update:showExtra'
-
+  'update:showExtra',
+  'itemChange'
 ])
 
-const name = defineAttrFromProps(props, emit, 'name')
-const note = defineAttrFromProps(props, emit, 'note')
-const date = defineAttrFromProps(props, emit, 'date')
-const timer = defineAttrFromProps(props, emit, 'timer')
-const isFlag = defineAttrFromProps(props, emit, 'isFlag')
-const showExtra = defineAttrFromProps(props, emit, 'showExtra')
+function defineAttr(key, notifyChange = true) {
+  return defineAttrFromProps(props, emit, key, notifyChange ? 'itemChange' : null)
+}
+
+const name = defineAttr('name')
+const note = defineAttr('note')
+const date = defineAttr('date')
+const timer = defineAttr('timer')
+const isFlag = defineAttr('isFlag')
+const showExtra = defineAttr('showExtra', false)
 
 const extraContent = computed(() => {
   let dateStr = getDateStr(date.value)

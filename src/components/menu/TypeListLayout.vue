@@ -10,7 +10,7 @@
     <div ref="refMenuList">
       <TransitionGroup name="list">
         <div v-for="(item, index) in list" :key="item.id" :class="{'indicator-item': isShowIndicator(index)}" ref="items">
-          <type-item :name="item.name" :count="item.count"
+          <type-item :name="item.name" :count="getTodoCount(item)"
                      :svg-name="`ic_type_white${item.svgIndex}`"
                      :color="`${colorList[item.colorIndex]}`"
                      :edit="index === currentEditIndex"
@@ -58,7 +58,7 @@ import { nextTick, onMounted, reactive, ref, watch } from "vue";
 import { useCurrentTypeStore } from "@/store/currentType";
 import { getTypeList, updateTypeList } from "@/storage/type";
 import { getLastTypeId, saveLastTypeId } from "@/storage/history";
-import { getTypeItemById } from "@/utils/typeUtils";
+import { getTodoCount, getTypeItemById } from "@/utils/typeUtils";
 
 // 这里和.menu-item-layout的高度保持同步
 const MENU_ITEM_HEIGHT = 36
@@ -280,7 +280,7 @@ function useContextMenu(list, refContextMenu, emit, updateCurrentType, currentId
       if (type === 'delete') {
         let typeItem = list.value[activeIndex.value]
         // list.value.splice(activeIndex.value, 1)
-        if (typeItem.count > 0) {
+        if (getTodoCount(typeItem) > 0) {
           dialog.showDeleteDialog = true
           dialog.title = typeItem.name
           return

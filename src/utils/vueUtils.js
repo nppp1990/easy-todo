@@ -1,17 +1,23 @@
 import { computed } from "vue";
 
-export const defineAttrFromProps = (props, emit, key) => {
+export const defineAttrFromProps = (props, emit, key, otherEvent = null) => {
   return computed({
     get() {
       return props[key]
     },
     set(value) {
-      emit(`update:${ key }`, value)
+      let oldValue = props[key]
+      if (value !== oldValue) {
+        emit(`update:${ key }`, value)
+        if (otherEvent) {
+          emit(otherEvent, { key, value, oldValue})
+        }
+      }
     }
   })
 }
 
-export function useModel(props, propName, emit) {
+export function useModel(props, emit, propName) {
   return computed({
     get() {
       return new Proxy(props[propName], {

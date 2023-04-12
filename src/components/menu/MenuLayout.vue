@@ -36,7 +36,6 @@ import CardItem from "@/components/menu/CardItem.vue";
 import TypeListLayout from "@/components/menu/TypeListLayout.vue";
 import TypeDialogLayout from "@/components/menu/TypeDialogLayout.vue";
 import { nextTick, ref, watch } from "vue";
-import { DEFAULT_COLOR_INDEX, DEFAULT_ICON_INDEX, DEFAULT_TITLE } from "@/components/menu/menuConstants";
 import { useTypeStore } from "@/store/type";
 
 const currentCard = ref(1)
