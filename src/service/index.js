@@ -16,5 +16,5 @@ export const createType = (typeInfo) => {
 }
 
 export function createTodoDoc() {
-  return new TodoDoc(-1)
+  return new TodoDoc(useTypeStore().incrementDocId())
 }

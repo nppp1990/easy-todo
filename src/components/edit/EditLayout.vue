@@ -1,7 +1,7 @@
 <template>
   <div class="edit-root">
     <span v-show="todoList.length === 0">没有提醒事项</span>
-    <edit-item v-for="(item, index) in todoList" :key="index"
+    <edit-item v-for="(item, index) in todoList" :key="item.id"
                v-model:name="item.name"
                v-model:note="item.note"
                v-model:date="item.date"
@@ -24,7 +24,6 @@ import { useTypeStore } from "@/store/type";
 
 const todoList = ref([])
 const currentTypeStore = useCurrentTypeStore()
-const typeStore = useTypeStore()
 const currentTypeId = ref('')
 let currentShowIndex = -1
 
@@ -36,21 +35,36 @@ currentTypeStore.$subscribe((mutation, state) => {
 
 // todoList变化
 function onItemChanged(index, args) {
-  if (args && args.key === 'name' && args.oldValue === '') {
-    // name由空变为非空、则表示新建一个todo
-    todoList.value[index].id = typeStore.incrementDocId()
-    saveTodo(todoList.value[index])
-  } else {
-    if (todoList.value[index].id > -1) {
-      saveDoc(todoList.value[index])
-    }
+  if (!args) {
+    return
+  }
+
+  if (args.key === 'name' && args.value === '') {
+    return;
+  }
+  if (todoList.value[index].saved) {
+    saveDoc(todoList.value[index])
   }
 }
 
 function collapseChanged(item, index) {
-  if (item.showExtra && currentShowIndex !== index) {
-    handleLastItem()
-    currentShowIndex = index
+  if (item.showExtra) {
+    if (currentShowIndex !== index) {
+      handleLastItem()
+      currentShowIndex = index
+    }
+  } else {
+    // 目前只有nameInput回车会走到这
+    currentShowIndex = -1
+    if (item.name === '') {
+      deleteTodo(item, index)
+    } else {
+      if (!item.saved) {
+        saveTodo(item)
+      }
+      // 收起当前的item以后、在下面位置创建一个新的item
+      createItem(index + 1)
+    }
   }
 }
 
@@ -59,16 +73,16 @@ function handleLastItem() {
     return
   }
   const currentItem = todoList.value[currentShowIndex]
-  if (currentItem.id === -1) {
-    // 如果id为-1表示撤销新建item
-    todoList.value.splice(currentShowIndex, 1)
-  } else if (currentItem.name === '') {
-    // 如果name为空表示删除该todo、所以还要更新存储和count
-    todoList.value.splice(currentShowIndex, 1)
-    deleteTodo(currentItem)
-  } else {
+  if (currentItem.name === '') {
+    // name为空、直接删除即可
+    deleteTodo(currentItem, currentShowIndex)
+  } else if (currentItem.saved) {
     // 收起
-    todoList.value[currentShowIndex].showExtra = false
+    currentItem.showExtra = false
+  } else {
+    // 保存新建的todo
+    saveTodo(currentItem)
+    currentItem.showExtra = false
   }
 }
 
@@ -80,12 +94,15 @@ function initList(type) {
 
 initList(currentTypeStore.item)
 
-function createItem() {
+function createItem(index) {
   let todoItem = createTodoDoc()
-  // todoItem.showExtra = true
+  if (index === undefined) {
+    currentShowIndex = todoList.value.length
+  } else {
+    currentShowIndex = index
+  }
   // 更新todoList
-  todoList.value.push(todoItem)
-  currentShowIndex = todoList.value.length - 1
+  todoList.value.splice(currentShowIndex, 0, todoItem)
   nextTick(() => {
     // 为了展示动画，延后把showExtra改变
     todoList.value[currentShowIndex].showExtra = true
@@ -103,11 +120,15 @@ function onClickBlank() {
   }
 }
 
+/**
+ * 主动触发addTodo
+ */
 function addTodoItem() {
   if (currentShowIndex !== -1) {
-    if (todoList.value[currentShowIndex].id === -1) {
-      // 当前为正在编辑的新todo，不作处理
-      return
+    let currentItem = todoList.value[currentShowIndex]
+    if (!currentItem.saved && currentItem.name === '') {
+      // 如果没有保存、并且name为空，则什么都不处理
+      return;
     }
     handleLastItem()
   }
@@ -118,13 +139,20 @@ defineExpose({ addTodoItem })
 
 
 function saveTodo(todoItem) {
+  todoItem.saved = true
   // 创建的todo持久化
   saveDoc(todoItem)
   // 更新type的idList
   currentTypeStore.addTodoItem(todoItem.id)
 }
 
-function deleteTodo(todoItem) {
+function deleteTodo(todoItem, index) {
+  // ui上删除列表的item
+  todoList.value.splice(index, 1)
+  if (!todoItem.saved) {
+    return
+  }
+  // 数据删除item
   delDoc(todoItem)
   currentTypeStore.delTodoItem(todoItem.id)
 }

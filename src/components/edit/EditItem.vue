@@ -10,7 +10,9 @@
       </label>
     </div>
     <div class="info-layout">
-      <input class="input-item name" type="text" v-model="name" @click.stop="onClickSpan" ref="refNameInput">
+      <input class="input-item name" type="text" v-model="name" ref="refNameInput"
+             @click.stop="onClickSpan"
+             @keydown.enter="onNameInputEnter">
       <el-collapse-transition>
         <div>
           <el-input v-show="showExtra || note.length > 0" class="remark" type="textarea" placeholder="备注"
@@ -127,6 +129,10 @@ const extraContent = computed(() => {
 
 function onClickSpan() {
   showExtra.value = true
+}
+
+function onNameInputEnter() {
+  showExtra.value = false
 }
 </script>
 <style scoped lang="scss">

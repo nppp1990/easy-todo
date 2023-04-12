@@ -4,7 +4,8 @@ const KEY_TYPE_LIST = 'todo_local_storage_type_list'
 const KEY_DOC_KEY = 'todo_local_todo_'
 
 export class TodoDoc {
-  constructor(id, name = '', note = '', date = '', timer = '', isFlag = false, showExtra = false) {
+  constructor(id, name = '', note = '', date = '', timer = '', isFlag = false,
+              showExtra = false, saved = false) {
     this.id = id
     this.name = name
     this.note = note
@@ -12,6 +13,7 @@ export class TodoDoc {
     this.timer = timer
     this.isFlag = isFlag
     this.showExtra = showExtra
+    this.saved = saved
   }
 }
 
@@ -30,7 +32,9 @@ export function getDocList(typeItem) {
   for (const id of typeItem.idList) {
     let item = getDocById(id)
     if (item) {
+      // 加这两个保证万无一失
       item.showExtra = false
+      item.saved = true
       list.push(item)
     }
   }
