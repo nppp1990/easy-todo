@@ -11,12 +11,12 @@
                @update:show-extra="collapseChanged(item, index)"
                @item-change="args=>onItemChanged(index, args)"
     />
-    <div class="other-layout" @click="test"></div>
+    <div class="other-layout" @click="onClickBlank"></div>
   </div>
 </template>
 <script setup>
 import EditItem from "@/components/edit/EditItem.vue";
-import { ref } from "vue";
+import { nextTick, ref } from "vue";
 import { useCurrentTypeStore } from "@/store/currentType";
 import { delDoc, getDocList, saveDoc } from "@/storage/type";
 import { createTodoDoc } from "@/service";
@@ -80,14 +80,19 @@ function initList(type) {
 
 initList(currentTypeStore.item)
 
-function test() {
+// 点击空白处
+function onClickBlank() {
   if (currentShowIndex === -1) {
     // 当前没有在编辑状态的todo，点击空白表示新建一个item
     let todoItem = createTodoDoc()
-    todoItem.showExtra = true
+    // todoItem.showExtra = true
     // 更新todoList
     todoList.value.push(todoItem)
     currentShowIndex = todoList.value.length - 1
+    nextTick(()=>{
+      // 为了展示动画，延后把showExtra改变
+      todoList.value[currentShowIndex].showExtra = true
+    })
   } else {
     handleLastItem()
     currentShowIndex = -1

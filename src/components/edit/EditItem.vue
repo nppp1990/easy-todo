@@ -10,29 +10,26 @@
       </label>
     </div>
     <div class="info-layout">
-      <input class="name" type="text" v-model="name" @click.stop="onClickSpan">
-      <!--      <div v-show="!showExtra">testXXXX</div>-->
+      <input class="name" type="text" v-model="name" @click.stop="onClickSpan" ref="refNameInput">
       <el-collapse-transition>
-        <div style="display: flex; flex-direction: column" v-show="showExtra">
-          <input class="remark" type="text" placeholder="备注" @click.stop="onClickSpan" v-model="note">
-          <!--          <input type="text" placeholder="添加标签" v-model="testLabel">-->
-          <div class="other-info">
-            <todo-date-picker v-model="date" />
-            <todo-time-picker class="label-right" v-model="timer"
-                              :style="`display: ${date.length > 0 ? 'block' : 'none'} `" />
-            <div class="label-layout label label-right">#</div>
-            <div class="label-layout flag label-right" @click="isFlag = !isFlag">
-              <img :src="`src/assets/svg/ic_flag${isFlag ? '_selected' : ''}.svg`" alt="">
-            </div>
+        <div>
+          <input v-show="showExtra || note.length > 0" class="remark" type="text" placeholder="备注" @click.stop="onClickSpan" v-model="note"
+                 ref="refNoteInput">
+        </div>
+      </el-collapse-transition>
+      <el-collapse-transition>
+        <div v-show="showExtra" class="other-info">
+          <todo-date-picker v-model="date" />
+          <todo-time-picker class="label-right" v-model="timer"
+                            :style="`display: ${date.length > 0 ? 'block' : 'none'} `" />
+          <div class="label-layout label label-right">#</div>
+          <div class="label-layout flag label-right" @click="isFlag = !isFlag">
+            <img :src="`src/assets/svg/ic_flag${isFlag ? '_selected' : ''}.svg`" alt="">
           </div>
         </div>
       </el-collapse-transition>
       <template v-if="!showExtra">
-        <input v-show="note.length > 0"
-               :value="note" class="remark" type="text" placeholder="备注" @click.stop="onClickSpan">
         <span v-show="date.length > 0" class="extra_content" @click.stop="onClickSpan">{{ extraContent }}</span>
-        <!--        <input v-if="testLabel.length > 0"-->
-        <!--               :value="testLabel" type="text" placeholder="添加标签"  @click.stop="onClickSpan">-->
       </template>
       <div class="divider" />
     </div>
@@ -42,7 +39,7 @@
 import TodoDatePicker from "@/components/edit/TodoDatePicker.vue";
 import TodoTimePicker from "@/components/edit/TodoTimePicker.vue";
 import { defineAttrFromProps } from "@/utils/vueUtils";
-import { computed } from "vue";
+import { computed, ref, watch } from "vue";
 import { getDateStr } from "@/utils/timeUtils";
 
 const props = defineProps({
@@ -90,6 +87,27 @@ const note = defineAttr('note')
 const date = defineAttr('date')
 const timer = defineAttr('timer')
 const isFlag = defineAttr('isFlag')
+
+const refNameInput = ref(null)
+
+watch(() => props.showExtra, (show) => {
+  if (show && !isFocused()) {
+    // 只有当前todoItem、没有焦点时才聚焦到name
+    refNameInput.value.focus()
+  }
+})
+
+const refNoteInput = ref(null)
+
+/**
+ * 当前todoItem是否有焦点
+ * @returns {boolean}
+ */
+function isFocused() {
+  let activeElement = document.activeElement
+  return activeElement && refNoteInput.value === activeElement
+}
+
 const showExtra = defineAttr('showExtra', false)
 
 const extraContent = computed(() => {
