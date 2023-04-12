@@ -10,11 +10,13 @@
       </label>
     </div>
     <div class="info-layout">
-      <input class="name" type="text" v-model="name" @click.stop="onClickSpan" ref="refNameInput">
+      <input class="input-item name" type="text" v-model="name" @click.stop="onClickSpan" ref="refNameInput">
       <el-collapse-transition>
         <div>
-          <input v-show="showExtra || note.length > 0" class="remark" type="text" placeholder="备注" @click.stop="onClickSpan" v-model="note"
-                 ref="refNoteInput">
+          <el-input v-show="showExtra || note.length > 0" class="remark" type="textarea" placeholder="备注"
+                    :autosize="{ minRows: 1, maxRows: 5 }"
+                    @click.stop="onClickSpan" v-model="note" ref="refNoteInput">
+          </el-input>
         </div>
       </el-collapse-transition>
       <el-collapse-transition>
@@ -41,6 +43,8 @@ import TodoTimePicker from "@/components/edit/TodoTimePicker.vue";
 import { defineAttrFromProps } from "@/utils/vueUtils";
 import { computed, ref, watch } from "vue";
 import { getDateStr } from "@/utils/timeUtils";
+
+const textarea = ref('')
 
 const props = defineProps({
   name: {
@@ -89,6 +93,7 @@ const timer = defineAttr('timer')
 const isFlag = defineAttr('isFlag')
 
 const refNameInput = ref(null)
+const refNoteInput = ref(null)
 
 watch(() => props.showExtra, (show) => {
   if (show && !isFocused()) {
@@ -97,7 +102,6 @@ watch(() => props.showExtra, (show) => {
   }
 })
 
-const refNoteInput = ref(null)
 
 /**
  * 当前todoItem是否有焦点
@@ -105,7 +109,7 @@ const refNoteInput = ref(null)
  */
 function isFocused() {
   let activeElement = document.activeElement
-  return activeElement && refNoteInput.value === activeElement
+  return activeElement && (refNoteInput.value.ref === activeElement || refNameInput.value === activeElement)
 }
 
 const showExtra = defineAttr('showExtra', false)
@@ -207,27 +211,35 @@ function onClickSpan() {
     flex-direction: column;
     font-size: 13px;
 
-    input {
+    .input-item, :deep(.el-textarea__inner) {
       display: inline-block;
       background: none;
       border: none;
       outline: none;
-      height: 18px;
+      line-height: 18px;
+      width: 100%;
       font-size: inherit;
-      color: var(--todo-black1);
+      padding: 0;
 
       &::placeholder {
         font-size: inherit;
         color: var(--todo-gray2);
+        border: none;
+        outline: none;
+        box-shadow: none;
       }
 
       &.name {
+        color: var(--todo-black1);
+        height: 18px;
         margin-top: 7px;
       }
+    }
 
-      &.remark {
-        color: var(--todo-gray4);
-      }
+    :deep(.el-textarea__inner) {
+      color: var(--todo-gray4);
+      resize: none;
+      box-shadow: none;
     }
 
     .other-info {
@@ -260,7 +272,6 @@ function onClickSpan() {
         }
       }
 
-
       .label-right {
         margin-left: 8px;
       }
@@ -279,7 +290,5 @@ function onClickSpan() {
       margin-top: 6px;
     }
   }
-
-
 }
 </style>
