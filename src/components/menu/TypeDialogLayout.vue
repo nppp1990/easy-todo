@@ -3,7 +3,7 @@
     <h4>{{ currentTitle }}</h4>
     <div class="name-layout">
       <span>名称：</span>
-      <input type="text" v-model="currentTypeName" ref="nameInput">
+      <input type="text" v-model="currentTypeName" ref="nameInput" @blur="$event.target.focus()">
     </div>
     <div class="label-layout">
       <div class="color-layout">

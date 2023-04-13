@@ -20,7 +20,6 @@ import { nextTick, ref } from "vue";
 import { useCurrentTypeStore } from "@/store/currentType";
 import { delDoc, getDocList, saveDoc } from "@/storage/type";
 import { createTodoDoc } from "@/service";
-import { useTypeStore } from "@/store/type";
 
 const todoList = ref([])
 const currentTypeStore = useCurrentTypeStore()
