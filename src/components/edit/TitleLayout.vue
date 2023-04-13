@@ -74,7 +74,7 @@ const colorList = TYPE_COLOR_LIST
 
   h1 {
     font-size: 36px;
-    color: #157efb;
+    color: var(--todo-blue);
     position: absolute;
     top: 34px;
 
