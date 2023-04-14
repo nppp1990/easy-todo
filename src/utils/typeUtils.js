@@ -59,12 +59,11 @@ export function getDocList(typeItem) {
   return list
 }
 
-const KEY_SPILT = '_'
 
-// 下面的代码我tmd已经不知道在干嘛了：就是为了给item一个带顺序的id，保证插入的id满足pre<id<next
+// 保证插入的id满足pre<id<next
 export function generateSortId(list, index) {
   if (list.length === 1) {
-    return '1'
+    return 1
   }
   // 除了上面的情况、不可能插入在最上面、即index>0
   let preId = list[index - 1].sortId
@@ -79,22 +78,11 @@ export function generateSortId(list, index) {
   })
   let preIndex = ids.indexOf(preId)
   let nextId = ids[preIndex + 1]
-  let split1 = preId.split(KEY_SPILT);
   if (!nextId) {
-    // 最后一个时：1-1后面是1-2
-    return split1.slice(0, -1).join(KEY_SPILT) + (split1.length > 1 ? KEY_SPILT : '') + (Number.parseInt(split1[split1.length - 1]) + 1)
+    // 没有next时
+    return preId + 1
   }
-  let split2 = nextId.split(KEY_SPILT)
-  if (split1.length === split2.length) {
-    // 如果相等，则需要在后面加-1：例如pre是1_1，next是1_2，则插入1_1_1
-    return preId + KEY_SPILT + '1'
-  }
-  if (split1.length < split2.length) {
-    // pre是1 next为1_0 则插入1_-1
-    return split2.slice(0, -1).join(KEY_SPILT) + (split2.length > 1 ? KEY_SPILT : '') + (Number.parseInt(split2[split2.length - 1]) - 1)
-  }
-  // pre是1_1  next为2
-  return split1.slice(0, -1).join(KEY_SPILT) + (split1.length > 1 ? KEY_SPILT : '') + (Number.parseInt(split1[split1.length - 1]) + 1)
+  return (preId + nextId) / 2
 }
 
 // function noNeedChangeIndex(list, insertItem, currentIndex) {
