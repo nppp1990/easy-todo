@@ -1,16 +1,19 @@
 <template>
   <div class="edit-root">
     <span v-show="todoList.length === 0">没有提醒事项</span>
-    <edit-item v-for="(item, index) in todoList" :key="item.id"
-               v-model:name="item.name"
-               v-model:note="item.note"
-               v-model:date="item.date"
-               v-model:timer="item.timer"
-               v-model:is-flag="item.isFlag"
-               v-model:show-extra="item.showExtra"
-               @update:show-extra="collapseChanged(item, index)"
-               @item-change="args=>onItemChanged(index, args)"
-    />
+    <TransitionGroup name="list">
+      <edit-item v-for="(item, index) in todoList" :key="item.id"
+                 v-model:name="item.name"
+                 v-model:note="item.note"
+                 v-model:date="item.date"
+                 v-model:timer="item.timer"
+                 v-model:is-flag="item.isFlag"
+                 v-model:done="item.done"
+                 v-model:show-extra="item.showExtra"
+                 @update:done="onDoneStatusChanged(item, index)"
+                 @update:show-extra="collapseChanged(item, index)"
+      />
+    </TransitionGroup>
     <div class="other-layout" @click="onClickBlank"></div>
   </div>
 </template>
@@ -18,8 +21,9 @@
 import EditItem from "@/components/edit/EditItem.vue";
 import { nextTick, ref } from "vue";
 import { useCurrentTypeStore } from "@/store/currentType";
-import { delDoc, getDocList, saveDoc } from "@/storage/type";
+import { delDoc, saveDoc } from "@/storage/type";
 import { createTodoDoc } from "@/service";
+import { generateSortId, getDocList, getInsertIndex } from "@/utils/typeUtils";
 
 const todoList = ref([])
 const currentTypeStore = useCurrentTypeStore()
@@ -33,17 +37,23 @@ currentTypeStore.$subscribe((mutation, state) => {
 })
 
 // todoList变化
-function onItemChanged(index, args) {
-  if (!args) {
+// function onItemChanged(item, index, args) {
+//   console.log('---onItemChanged',)
+// }
+
+function onDoneStatusChanged(item, index, publishEvent = true) {
+  if (item.showExtra) {
     return
   }
 
-  if (args.key === 'name' && args.value === '') {
-    return;
+  todoList.value.splice(index, 1)
+  let insertIndex = getInsertIndex(todoList.value, item)
+  todoList.value.splice(insertIndex, 0, item)
+  if (publishEvent) {
+    saveDoc(item)
+    currentTypeStore.toggleDoneStatus(item.id, item.done)
   }
-  if (todoList.value[index].saved) {
-    saveDoc(todoList.value[index])
-  }
+  return insertIndex
 }
 
 function collapseChanged(item, index) {
@@ -54,39 +64,57 @@ function collapseChanged(item, index) {
     }
   } else {
     // 目前只有nameInput回车会走到这
+    handleLastItem(index)
     currentShowIndex = -1
-    if (item.name === '') {
-      deleteTodo(item, index)
-    } else {
-      if (!item.saved) {
-        saveTodo(item)
-      }
+    if (item.name !== '') {
       // 收起当前的item以后、在下面位置创建一个新的item
       createItem(index + 1)
     }
   }
 }
 
-function handleLastItem() {
-  if (currentShowIndex === -1) {
+function moveItem(item, lastIndex, changedCallback) {
+  let copyList = [...todoList.value]
+  copyList.splice(lastIndex, 1)
+  let expectIndex = getInsertIndex(copyList, item)
+  if (expectIndex === lastIndex) {
+    // 如果位置不变、就只收起+保存
+    item.showExtra = false
+    // saveDoc(item)
+  } else {
+    // 收起+移动位置+通知全局变量变化
+    item.showExtra = false
+    todoList.value.splice(lastIndex, 1)
+    todoList.value.splice(expectIndex, 0, item)
+    if (changedCallback) {
+      changedCallback()
+    }
+  }
+}
+
+function handleLastItem(lastIndex = currentShowIndex) {
+  if (lastIndex === -1) {
     return
   }
-  const currentItem = todoList.value[currentShowIndex]
+  const currentItem = todoList.value[lastIndex]
   if (currentItem.name === '') {
     // name为空、直接删除即可
-    deleteTodo(currentItem, currentShowIndex)
+    deleteTodo(currentItem, lastIndex)
   } else if (currentItem.saved) {
-    // 收起
-    currentItem.showExtra = false
+    moveItem(currentItem, lastIndex, () => {
+      currentTypeStore.toggleDoneStatus(currentItem.id, currentItem.done)
+    })
+    saveDoc(currentItem)
   } else {
     // 保存新建的todo
-    saveTodo(currentItem)
-    currentItem.showExtra = false
+    saveNewTodo(currentItem, lastIndex)
+
   }
 }
 
 function initList(type) {
   currentTypeId.value = type.id
+  // todo 暂时每次都从storage取、可以从内存取的、但是麻烦点
   todoList.value = getDocList(type)
   currentShowIndex = -1
 }
@@ -127,7 +155,7 @@ function addTodoItem() {
     let currentItem = todoList.value[currentShowIndex]
     if (!currentItem.saved && currentItem.name === '') {
       // 如果没有保存、并且name为空，则什么都不处理
-      return;
+      return
     }
     handleLastItem()
   }
@@ -136,13 +164,19 @@ function addTodoItem() {
 
 defineExpose({ addTodoItem })
 
-
-function saveTodo(todoItem) {
+function saveNewTodo(todoItem, index) {
+  let sortId = generateSortId(todoList.value, index)
+  todoItem.setSortId(sortId)
   todoItem.saved = true
+  moveItem(todoItem, index)
   // 创建的todo持久化
   saveDoc(todoItem)
   // 更新type的idList
-  currentTypeStore.addTodoItem(todoItem.id)
+  if (todoItem.done) {
+    currentTypeStore.addDoneItem(todoItem.id)
+  } else {
+    currentTypeStore.addTodoItem(todoItem.id)
+  }
 }
 
 function deleteTodo(todoItem, index) {
@@ -174,5 +208,9 @@ function deleteTodo(todoItem, index) {
   .other-layout {
     flex: 1;
   }
+}
+
+.list-move {
+  transition: all 0.5s ease;
 }
 </style>

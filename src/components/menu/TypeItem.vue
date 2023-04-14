@@ -1,11 +1,11 @@
 <template>
   <div>
     <circle-icon class="circle" :svg-name="svgName" :color="color" />
-    <input v-if="edit" v-model="nameFromInput" ref="refInput"
+    <input v-show="edit" v-model="nameFromInput" ref="refInput"
            @focusout="$emit('modifyName', nameFromInput)"
            @keydown.enter="$emit('modifyName', nameFromInput)"
            @click.stop />
-    <span v-else class="name">{{ name }}</span>
+    <span v-show="!edit" class="name">{{ name }}</span>
     <span class="count">{{ count }}</span>
   </div>
 </template>

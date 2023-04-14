@@ -1,23 +1,23 @@
 <template>
   <div class="edit-item-root">
     <label class="radio">
-      <input type="checkbox" checked="checked">
+      <input type="checkbox" v-model="isDone">
       <div class="checkmark" />
     </label>
     <div class="info-layout">
       <input class="input-item name" type="text" v-model="name" ref="refNameInput"
              @click.stop="onClickSpan"
-             @keydown.enter="onNameInputEnter">
+             @keydown.enter="onNameInputEnter($event)">
       <el-collapse-transition>
-        <div>
-          <el-input v-show="showExtra || note.length > 0" class="remark" type="textarea" placeholder="备注"
+        <div v-show="showExtra || note.length > 0">
+          <el-input class="remark" type="textarea" placeholder="备注"
                     :autosize="{ minRows: 1, maxRows: 5 }"
                     @click.stop="onClickSpan" v-model="note" ref="refNoteInput">
           </el-input>
         </div>
       </el-collapse-transition>
       <el-collapse-transition>
-        <div v-show="showExtra" class="other-info">
+        <div v-if="showExtra" class="other-info">
           <todo-date-picker v-model="date" />
           <todo-time-picker class="label-right" v-model="timer"
                             :style="`display: ${date.length > 0 ? 'block' : 'none'} `" />
@@ -28,7 +28,7 @@
         </div>
       </el-collapse-transition>
       <template v-if="!showExtra">
-        <span v-show="date.length > 0" class="extra_content" @click.stop="onClickSpan">{{ extraContent }}</span>
+        <span v-if="date.length > 0" class="extra_content" @click.stop="onClickSpan">{{ extraContent }}</span>
       </template>
       <div class="divider" />
     </div>
@@ -62,6 +62,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  done: {
+    type: Boolean,
+    default: false,
+  },
   showExtra: {
     type: Boolean,
     default: false,
@@ -73,12 +77,10 @@ const emit = defineEmits([
   'update:date',
   'update:timer',
   'update:isFlag',
+  'update:done',
   'update:showExtra',
   'itemChange'
 ])
-
-const checked = ref(false)
-
 
 function defineAttr(key, notifyChange = true) {
   return defineAttrFromProps(props, emit, key, notifyChange ? 'itemChange' : null)
@@ -89,6 +91,7 @@ const note = defineAttr('note')
 const date = defineAttr('date')
 const timer = defineAttr('timer')
 const isFlag = defineAttr('isFlag')
+const isDone = defineAttr('done')
 
 const refNameInput = ref(null)
 const refNoteInput = ref(null)
@@ -127,7 +130,10 @@ function onClickSpan() {
   showExtra.value = true
 }
 
-function onNameInputEnter() {
+function onNameInputEnter(ev) {
+  if (ev.isComposing) {
+    return
+  }
   showExtra.value = false
 }
 </script>

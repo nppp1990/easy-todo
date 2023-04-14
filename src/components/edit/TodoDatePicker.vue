@@ -16,7 +16,7 @@
 </template>
 <script setup>
 import dayjs from "dayjs";
-import { computed, h, onMounted, ref } from "vue";
+import { computed, h, onBeforeUnmount, onMounted, ref } from "vue";
 import { getDateStr } from "@/utils/timeUtils";
 
 const props = defineProps(['modelValue'])
@@ -56,25 +56,31 @@ const dateFormat = computed(() => {
   return 'YYYY/MM/DD'
 })
 
+let changeListener = () => {
+  let inputValue = input.value.trim()
+  if (inputValue === '今天') {
+    date.value = dayjs().format()
+    dataPickerRef.value.handleClose()
+    return
+  }
+  if (inputValue === '明天') {
+    date.value = dayjs().add(1, 'day').format()
+    dataPickerRef.value.handleClose()
+    return
+  }
+  if (inputValue === '昨天') {
+    date.value = dayjs().add(-1, 'day').format()
+    dataPickerRef.value.handleClose()
+  }
+}
 onMounted(() => {
   const input = rootRef.value.getElementsByTagName('input')[0]
-  input.addEventListener('change', () => {
-    let inputValue = input.value.trim()
-    if (inputValue === '今天') {
-      date.value = dayjs().format()
-      dataPickerRef.value.handleClose()
-      return
-    }
-    if (inputValue === '明天') {
-      date.value = dayjs().add(1, 'day').format()
-      dataPickerRef.value.handleClose()
-      return
-    }
-    if (inputValue === '昨天') {
-      date.value = dayjs().add(-1, 'day').format()
-      dataPickerRef.value.handleClose()
-    }
-  })
+  input.addEventListener('change', changeListener)
+})
+
+onBeforeUnmount(()=>{
+  const input = rootRef.value.getElementsByTagName('input')[0]
+  input.removeEventListener('change', changeListener)
 })
 </script>
 <style scoped lang="scss">
