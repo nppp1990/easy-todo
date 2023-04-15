@@ -35,7 +35,11 @@ defineExpose({ saveEditItem })
 
   .edit-layout {
     flex: 1;
-    overflow: scroll;
+    overflow-y: scroll;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
   }
 }
 </style>

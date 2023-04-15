@@ -1,20 +1,27 @@
 <template>
-  <div class="edit-root" ref="refTodoList">
-    <span v-show="todoList.length === 0">没有提醒事项</span>
-    <TransitionGroup name="list">
-      <edit-item v-for="(item, index) in todoList" :key="item.id" ref="refTodoItems"
-                 v-model:name="item.name"
-                 v-model:note="item.note"
-                 v-model:date="item.date"
-                 v-model:timer="item.timer"
-                 v-model:is-flag="item.isFlag"
-                 v-model:done="item.done"
-                 v-model:show-extra="item.showExtra"
-                 @update:done="onDoneStatusChanged(item, index)"
-                 @update:show-extra="collapseChanged(item, index)"
-      />
-    </TransitionGroup>
-    <div class="other-layout" @click="onClickBlank"></div>
+  <div ref="refRoot">
+    <div class="edit-root" ref="refTodoList">
+      <span v-show="todoList.length === 0">没有提醒事项</span>
+      <div class="header-layout flex-shrink0">
+        <span class="tip">0项已完成  ·  </span>
+        <span class="clear">清除</span>
+      </div>
+      <div class="divider flex-shrink0" />
+      <TransitionGroup name="list">
+        <edit-item v-for="(item, index) in todoList" :key="item.id" ref="refTodoItems"
+                   v-model:name="item.name"
+                   v-model:note="item.note"
+                   v-model:date="item.date"
+                   v-model:timer="item.timer"
+                   v-model:is-flag="item.isFlag"
+                   v-model:done="item.done"
+                   v-model:show-extra="item.showExtra"
+                   @update:done="onDoneStatusChanged(item, index)"
+                   @update:show-extra="collapseChanged(item, index)"
+        />
+      </TransitionGroup>
+      <div class="other-layout flex-shrink0" @click="onClickBlank"></div>
+    </div>
   </div>
 </template>
 <script setup>
@@ -95,6 +102,7 @@ function moveItem(item, lastIndex, changedCallback) {
 }
 
 const refTodoList = ref(null)
+const refRoot = ref(null)
 const refTodoItems = ref([])
 let listRect = null
 
@@ -152,6 +160,9 @@ function initList(type) {
   // todo 暂时每次都从storage取、可以从内存取的、但是麻烦点
   todoList.value = getDocList(type)
   currentShowIndex = -1
+  nextTick(() => {
+    refRoot.value.scrollTo({ top: 41 })
+  })
 }
 
 initList(currentTypeStore.item)
@@ -229,6 +240,11 @@ function deleteTodo(todoItem, index) {
 .edit-root {
   display: flex;
   flex-direction: column;
+  height: calc(100% + 41px);
+  overflow-y: scroll;
+  &::-webkit-scrollbar {
+    display: none;
+  }
 
   & > span {
     color: var(--todo-gray3);
@@ -240,9 +256,46 @@ function deleteTodo(todoItem, index) {
     transform: translate(-50%, -50%);
   }
 
+  .header-blank {
+    height: 40px;
+  }
+
+  .header-layout {
+    margin-left: 16px;
+    margin-right: 16px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    height: 40px;
+
+    .tip {
+      color: var(--todo-gray4);
+    }
+
+    .clear {
+      color: #fd9e9b;
+    }
+
+    .hide {
+      color: #fdc5c4;
+    }
+  }
+
+  .divider {
+    display: block;
+    width: 100%;
+    margin-left: 16px;
+    height: 1px;
+    background-color: var(--divider-gray2);
+  }
+
   .other-layout {
     flex: 1;
   }
+}
+
+.flex-shrink0 {
+  flex-shrink: 0;
 }
 
 .list-move {
