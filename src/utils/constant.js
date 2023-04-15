@@ -1,0 +1,1 @@
+export const INJECTION_KEY_EDIT_LAYOUT = 'edit_layout'

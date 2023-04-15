@@ -162,7 +162,7 @@ function addTodoItem() {
   createItem()
 }
 
-defineExpose({ addTodoItem })
+defineExpose({ addTodoItem, saveItem: handleLastItem })
 
 function saveNewTodo(todoItem, index) {
   let sortId = generateSortId(todoList.value, index)

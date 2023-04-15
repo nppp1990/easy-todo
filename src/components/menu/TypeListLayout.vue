@@ -54,11 +54,12 @@
 import TypeItem from "@/components/menu/TypeItem.vue";
 import ContextMenu from "@/components/common/ContextMenu.vue";
 import { TYPE_COLOR_LIST } from "@/components/menu/menuConstants";
-import { nextTick, onMounted, reactive, ref, watch } from "vue";
+import { inject, nextTick, onMounted, reactive, ref, watch } from "vue";
 import { useCurrentTypeStore } from "@/store/currentType";
 import { getTypeList, updateTypeList } from "@/storage/type";
 import { getLastTypeId, saveLastTypeId } from "@/storage/history";
 import { getTodoCount, getTypeItemById } from "@/utils/typeUtils";
+import { INJECTION_KEY_EDIT_LAYOUT } from "@/utils/constant";
 
 // 这里和.menu-item-layout的高度保持同步
 const MENU_ITEM_HEIGHT = 36
@@ -69,10 +70,19 @@ const refMenuList = ref(null)
 const refContextMenu = ref(null)
 const emit = defineEmits(['rightClickItem'])
 
+const { saveItem } = inject(INJECTION_KEY_EDIT_LAYOUT)
+const currentTypeStore = useCurrentTypeStore()
+function updateCurrentType(item) {
+  saveItem()
+  nextTick(()=>{
+    currentTypeStore.updateCurrentType(item)
+  })
+}
+
 // 列表数据展示相关
 const {
   list, currentId,
-  updateCurrentType, onItemClicked,
+  onItemClicked,
 } = useTypeList()
 
 // 列表拖拽相关
@@ -85,10 +95,9 @@ const {
 const {
   currentEditIndex, activeIndex, menuList, dialog,
   onMouseRightClick, onContextMenuClosed, onDelTypeDialogMiss, onNameModify
-} = useContextMenu(list, refContextMenu, emit, updateCurrentType, currentId)
+} = useContextMenu(list, refContextMenu, emit, currentId)
 
 function useTypeList() {
-  const currentTypeStore = useCurrentTypeStore()
 
   const list = ref(getTypeList())
   watch(list, (newValue) => {
@@ -101,17 +110,13 @@ function useTypeList() {
   })
   updateCurrentType(getTypeItemById(list.value, currentId.value))
 
-  function updateCurrentType(item) {
-    currentTypeStore.updateCurrentType(item)
-  }
-
   function onItemClicked(item) {
     currentId.value = item.id
     updateCurrentType(item)
   }
 
   return {
-    list, currentId, currentTypeStore,
+    list, currentId,
     updateCurrentType, onItemClicked,
   }
 }
@@ -223,7 +228,7 @@ function useTypeListDrag(list, refListLayout, refMenuList) {
   }
 }
 
-function useContextMenu(list, refContextMenu, emit, updateCurrentType, currentId) {
+function useContextMenu(list, refContextMenu, emit, currentId) {
   const currentEditIndex = ref(-1)
   const activeIndex = ref(-2)
 

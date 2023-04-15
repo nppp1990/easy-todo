@@ -1,7 +1,7 @@
 <template>
   <div class="content-layout">
-    <title-layout v-bind="currentType" @click-add="onClickAdd"/>
-    <edit-layout class="edit-layout" ref="refEditLayout"/>
+    <title-layout v-bind="currentType" @click-add="onClickAdd" />
+    <edit-layout class="edit-layout" ref="refEditLayout" />
   </div>
 </template>
 <script setup>
@@ -17,9 +17,16 @@ const currentType = computed(() => {
   return { title, count: getTodoCount(currentTypeStore.item), colorIndex }
 })
 const refEditLayout = ref(null)
+
 function onClickAdd() {
   refEditLayout.value.addTodoItem()
 }
+
+function saveEditItem() {
+  refEditLayout.value.saveItem()
+}
+
+defineExpose({ saveEditItem })
 </script>
 <style scoped lang="scss">
 .content-layout {
