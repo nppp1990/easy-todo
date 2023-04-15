@@ -63,7 +63,7 @@ function collapseChanged(item, index) {
       currentShowIndex = index
     }
     // 如果item看不完整需要移动todoList
-    moveTodoList(index)
+    // moveTodoList(index)
   } else {
     // 目前只有nameInput回车会走到这
     handleLastItem(index)
