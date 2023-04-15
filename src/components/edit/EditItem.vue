@@ -1,5 +1,5 @@
 <template>
-  <div class="edit-item-root">
+  <div class="edit-item-root" ref="refItem">
     <label class="radio">
       <input type="checkbox" v-model="isDone">
       <div class="checkmark" />
@@ -136,6 +136,13 @@ function onNameInputEnter(ev) {
   }
   showExtra.value = false
 }
+
+const refItem = ref(null)
+defineExpose({
+  getItemElement: function() {
+    return refItem.value
+  }
+})
 </script>
 <style scoped lang="scss">
 .edit-item-root {

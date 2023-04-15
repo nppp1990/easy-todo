@@ -35,6 +35,7 @@ defineExpose({ saveEditItem })
 
   .edit-layout {
     flex: 1;
+    overflow: scroll;
   }
 }
 </style>

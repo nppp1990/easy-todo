@@ -9,7 +9,6 @@
   </div>
 </template>
 <script setup>
-import { ref } from "vue";
 import { TYPE_COLOR_LIST } from "@/components/menu/menuConstants";
 
 defineProps({

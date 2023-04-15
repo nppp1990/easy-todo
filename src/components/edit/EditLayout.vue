@@ -1,8 +1,8 @@
 <template>
-  <div class="edit-root">
+  <div class="edit-root" ref="refTodoList">
     <span v-show="todoList.length === 0">没有提醒事项</span>
     <TransitionGroup name="list">
-      <edit-item v-for="(item, index) in todoList" :key="item.id"
+      <edit-item v-for="(item, index) in todoList" :key="item.id" ref="refTodoItems"
                  v-model:name="item.name"
                  v-model:note="item.note"
                  v-model:date="item.date"
@@ -62,6 +62,8 @@ function collapseChanged(item, index) {
       handleLastItem()
       currentShowIndex = index
     }
+    // 如果item看不完整需要移动todoList
+    moveTodoList(index)
   } else {
     // 目前只有nameInput回车会走到这
     handleLastItem(index)
@@ -92,6 +94,40 @@ function moveItem(item, lastIndex, changedCallback) {
   }
 }
 
+const refTodoList = ref(null)
+const refTodoItems = ref([])
+let listRect = null
+
+function getListRect() {
+  if (!listRect) {
+    listRect = refTodoList.value.getBoundingClientRect()
+  }
+  return listRect
+}
+
+function moveTodoList(index) {
+  // todo 展开动画el-collapse-transition不能控制时间、所以只能这么做了，后面可以考虑自定义一个collapse
+  // 而且现在动画是两段是的、足够丑陋
+  setTimeout(() => {
+    if (!refTodoList.value) {
+      return
+    }
+    let item = refTodoItems.value[index].getItemElement()
+    let itemRect = item.getBoundingClientRect()
+    if (itemRect.top < getListRect().top) {
+      refTodoList.value.scrollBy({
+        top: itemRect.top - getListRect().top,
+        behavior: 'smooth'
+      })
+    } else if (itemRect.bottom > getListRect().bottom) {
+      refTodoList.value.scrollBy({
+        top: itemRect.bottom - getListRect().bottom,
+        behavior: 'smooth'
+      })
+    }
+  }, 1000)
+}
+
 function handleLastItem(lastIndex = currentShowIndex) {
   if (lastIndex === -1) {
     return
@@ -108,7 +144,6 @@ function handleLastItem(lastIndex = currentShowIndex) {
   } else {
     // 保存新建的todo
     saveNewTodo(currentItem, lastIndex)
-
   }
 }
 
