@@ -1,0 +1,16 @@
+.feedback.el-dialog {
+  --el-dialog-bg-color: var(--todo-gray2);
+}
+
+.el-dialog {
+  border-radius: 10px;
+
+  .el-dialog__header {
+    padding: 0;
+  }
+
+  .el-dialog__body {
+    padding: 10px;
+    color: black;
+  }
+}

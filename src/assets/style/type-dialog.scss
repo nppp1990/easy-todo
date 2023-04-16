@@ -1,14 +1,5 @@
 :deep(.el-dialog) {
-  border-radius: 10px;
-
-  .el-dialog__header {
-    padding: 0;
-  }
-
   .el-dialog__body {
-    padding: 10px;
-    color: black;
-
     .dialog-layout {
       padding: 10px 6px 2px;
       background-color: white;

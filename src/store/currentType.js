@@ -22,6 +22,9 @@ export const useCurrentTypeStore = defineStore('currentType', () => {
   const addDoneItem = (itemId) => {
     item.value.doneIdList.push(itemId)
   }
+  const delAllDoneItem = () => {
+    item.value.doneIdList = []
+  }
   const delTodoItem = (todoId) => {
     item.value.idList.splice(item.value.idList.indexOf(todoId), 1)
   }
@@ -48,7 +51,10 @@ export const useCurrentTypeStore = defineStore('currentType', () => {
   }
 
   return {
-    item, updateCurrentType, addTodoItem, addDoneItem,
-    delTodoItem, toggleDoneStatus
+    item, updateCurrentType, addTodoItem,
+    addDoneItem,
+    delAllDoneItem,
+    delTodoItem,
+    toggleDoneStatus
   }
 })

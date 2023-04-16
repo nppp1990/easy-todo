@@ -3,12 +3,17 @@
     <div class="edit-root" ref="refTodoList">
       <span v-show="todoList.length === 0">没有提醒事项</span>
       <div class="header-layout flex-shrink0">
-        <span class="tip">0项已完成  ·  </span>
-        <span class="clear">清除</span>
+        <span class="tip">{{ doneCount }}项已完成&nbsp;·&nbsp;</span>
+        <span :style="colorStyle" @click="clearDone"> 清除</span>
+        <div class="middle" />
+        <span class="hide" :style="colorStyle" @click="showDone = !showDone">{{ showDone ? '隐藏' : '显示' }}</span>
+        <feedback-dialog title="清除已完成的提醒事项？" :message="`${doneCount}个已完成的提醒事项将从此列表中删除。\n此操作不能撤销`"
+                         v-model:show="showClearDialog"
+                         @on-sure="removeDoneList" />
       </div>
       <div class="divider flex-shrink0" />
       <TransitionGroup name="list">
-        <edit-item v-for="(item, index) in todoList" :key="item.id" ref="refTodoItems"
+        <edit-item v-for="(item, index) in showList" :key="item.id" ref="refTodoItems"
                    v-model:name="item.name"
                    v-model:note="item.note"
                    v-model:date="item.date"
@@ -26,13 +31,23 @@
 </template>
 <script setup>
 import EditItem from "@/components/edit/EditItem.vue";
-import { nextTick, ref } from "vue";
+import { computed, nextTick, ref, watch } from "vue";
 import { useCurrentTypeStore } from "@/store/currentType";
 import { delDoc, saveDoc } from "@/storage/type";
 import { createTodoDoc } from "@/service";
 import { generateSortId, getDocList, getInsertIndex } from "@/utils/typeUtils";
+import { TYPE_COLOR_LIST } from "@/components/menu/menuConstants";
+import FeedbackDialog from "@/components/common/FeedbackDialog.vue";
 
 const todoList = ref([])
+const showDone = ref(true)
+const showList = computed(() => {
+  if (showDone.value) {
+    return todoList.value
+  } else {
+    return todoList.value.filter(item => !item.done)
+  }
+})
 const currentTypeStore = useCurrentTypeStore()
 const currentTypeId = ref('')
 let currentShowIndex = -1
@@ -193,6 +208,31 @@ function onClickBlank() {
   }
 }
 
+const doneCount = computed(() => {
+  return todoList.value.filter(item => item.done).length
+})
+const colorStyle = computed(() => {
+  const { colorIndex } = currentTypeStore.item
+  return { color: TYPE_COLOR_LIST[colorIndex] }
+})
+const showClearDialog = ref(false)
+
+function removeDoneList() {
+  let doneList = todoList.value.filter(item => item.done)
+  todoList.value = todoList.value.filter(item => !item.done)
+  currentTypeStore.delAllDoneItem()
+  for (const doneItem of doneList) {
+    delDoc(doneItem)
+  }
+}
+
+function clearDone() {
+  if (doneCount.value === 0) {
+    return
+  }
+  showClearDialog.value = true
+}
+
 /**
  * 主动触发addTodo
  */
@@ -242,6 +282,7 @@ function deleteTodo(todoItem, index) {
   flex-direction: column;
   height: calc(100% + 41px);
   overflow-y: scroll;
+
   &::-webkit-scrollbar {
     display: none;
   }
@@ -261,23 +302,19 @@ function deleteTodo(todoItem, index) {
   }
 
   .header-layout {
-    margin-left: 16px;
-    margin-right: 16px;
+    margin: 0 16px;
     font-size: 14px;
     display: flex;
     align-items: center;
     height: 40px;
+    position: relative;
 
     .tip {
       color: var(--todo-gray4);
     }
 
-    .clear {
-      color: #fd9e9b;
-    }
-
-    .hide {
-      color: #fdc5c4;
+    .middle {
+      flex: 1;
     }
   }
 

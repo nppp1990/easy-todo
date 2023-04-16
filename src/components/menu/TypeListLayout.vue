@@ -32,22 +32,9 @@
     </div>
     <context-menu :menu-list="menuList" ref="refContextMenu"
                   @menu-dismiss="onContextMenuClosed" />
-    <el-dialog
-      class="feedback"
-      v-model="dialog.showDeleteDialog"
-      :show-close="false"
-      align-center
-      width="260px">
-      <div class="type-dialog">
-        <img src="src/assets/images/haha.jpeg" alt="">
-        <h3>删除列表 "{{ dialog.title }}" ？</h3>
-        <span class="message">这将删除此列表中所有的提醒事项。</span>
-        <div style="margin-top: 16px">
-          <el-button @click="onDelTypeDialogMiss(false)">取消</el-button>
-          <el-button type="primary" @click="onDelTypeDialogMiss(true)">删除</el-button>
-        </div>
-      </div>
-    </el-dialog>
+    <feedback-dialog :title="`删除列表${dialog.title } ？`" message="这将删除此列表中所有的提醒事项。"
+                     v-model:show="dialog.showDeleteDialog"
+                     @on-sure="deleteType" />
   </div>
 </template>
 <script setup>
@@ -60,6 +47,7 @@ import { getTypeList, updateTypeList } from "@/storage/type";
 import { getLastTypeId, saveLastTypeId } from "@/storage/history";
 import { getTodoCount, getTypeItemById } from "@/utils/typeUtils";
 import { INJECTION_KEY_EDIT_LAYOUT } from "@/utils/constant";
+import FeedbackDialog from "@/components/common/FeedbackDialog.vue";
 
 // 这里和.menu-item-layout的高度保持同步
 const MENU_ITEM_HEIGHT = 36
@@ -72,9 +60,10 @@ const emit = defineEmits(['rightClickItem'])
 
 const { saveItem } = inject(INJECTION_KEY_EDIT_LAYOUT)
 const currentTypeStore = useCurrentTypeStore()
+
 function updateCurrentType(item) {
   saveItem()
-  nextTick(()=>{
+  nextTick(() => {
     currentTypeStore.updateCurrentType(item)
   })
 }
@@ -94,7 +83,7 @@ const {
 // 右键contextMenu相关
 const {
   currentEditIndex, activeIndex, menuList, dialog,
-  onMouseRightClick, onContextMenuClosed, onDelTypeDialogMiss, onNameModify
+  onMouseRightClick, onContextMenuClosed, deleteType, onNameModify
 } = useContextMenu(list, refContextMenu, emit, currentId)
 
 function useTypeList() {
@@ -262,7 +251,7 @@ function useContextMenu(list, refContextMenu, emit, currentId) {
     -1,
     { value: '共享列表', type: 'none' }
   ])
-  const dialog = reactive({
+  const dialog = ref({
     showDeleteDialog: false,
     title: ''
   })
@@ -286,8 +275,8 @@ function useContextMenu(list, refContextMenu, emit, currentId) {
         let typeItem = list.value[activeIndex.value]
         // list.value.splice(activeIndex.value, 1)
         if (getTodoCount(typeItem) > 0) {
-          dialog.showDeleteDialog = true
-          dialog.title = typeItem.name
+          dialog.value.showDeleteDialog = true
+          dialog.value.title = typeItem.name
           return
         } else {
           list.value.splice(activeIndex.value, 1)
@@ -303,21 +292,23 @@ function useContextMenu(list, refContextMenu, emit, currentId) {
     activeIndex.value = -1
   }
 
-  function onDelTypeDialogMiss(yes) {
-    dialog.showDeleteDialog = false
-    const deleteIndex = activeIndex.value
-    activeIndex.value = -1
-    if (yes) {
-      nextTick(() => {
-        let isDelCurrent = list.value[deleteIndex].id === currentId.value
-        list.value.splice(deleteIndex, 1)
-        // todo 暂时还没做list为空的情况
-        if (isDelCurrent) {
-          currentId.value = list.value[0].id
-          updateCurrentType(list.value[0])
-        }
-      })
+  watch(() => dialog.value.showDeleteDialog, (v) => {
+    if (!v) {
+      activeIndex.value = -1
     }
+  })
+
+  function deleteType() {
+    const deleteIndex = activeIndex.value
+    nextTick(() => {
+      let isDelCurrent = list.value[deleteIndex].id === currentId.value
+      list.value.splice(deleteIndex, 1)
+      // todo 暂时还没做list为空的情况
+      if (isDelCurrent) {
+        currentId.value = list.value[0].id
+        updateCurrentType(list.value[0])
+      }
+    })
   }
 
   function onNameModify(index, name) {
@@ -330,7 +321,7 @@ function useContextMenu(list, refContextMenu, emit, currentId) {
 
   return {
     currentEditIndex, activeIndex, menuList, dialog,
-    onMouseRightClick, onContextMenuClosed, onDelTypeDialogMiss, onNameModify
+    onMouseRightClick, onContextMenuClosed, deleteType, onNameModify
   }
 }
 
