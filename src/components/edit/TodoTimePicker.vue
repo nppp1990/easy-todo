@@ -71,6 +71,10 @@ function onTextChange() {
   // 去掉空格
   value = value.replaceAll(' ', '')
   if (dayjs(value, 'H:mm', true).isValid()) {
+    if (value.indexOf(':') === 1) {
+      // 如果h只有一位数
+      value = '0' + value
+    }
     actualValue.value = value
   } else {
     // 不合法则把当前value还原

@@ -28,7 +28,7 @@
         </div>
       </el-collapse-transition>
       <template v-if="!showExtra">
-        <span v-if="date.length > 0" class="extra_content" @click.stop="onClickSpan">{{ extraContent }}</span>
+        <span v-if="date.length > 0" class="extra_content" :class="extraContentClass" @click.stop="onClickSpan">{{ extraContent }}</span>
       </template>
       <div class="divider" />
     </div>
@@ -39,7 +39,7 @@ import TodoDatePicker from "@/components/edit/TodoDatePicker.vue";
 import TodoTimePicker from "@/components/edit/TodoTimePicker.vue";
 import { defineAttrFromProps } from "@/utils/vueUtils";
 import { computed, ref, watch } from "vue";
-import { getDateStr } from "@/utils/timeUtils";
+import { getDateStr, isExpire } from "@/utils/timeUtils";
 
 const props = defineProps({
   name: {
@@ -124,6 +124,11 @@ const extraContent = computed(() => {
     return dateStr + ' ' + timer.value
   }
   return dateStr
+})
+
+const extraContentClass = computed(() => {
+  let expire = isExpire(date.value, timer.value)
+  return { expire }
 })
 
 function onClickSpan() {
@@ -269,6 +274,10 @@ defineExpose({
       height: 18px;
       font-size: inherit;
       color: var(--el-text-color-placeholder);
+
+      &.expire {
+        color: #fb4743;
+      }
     }
 
     .divider {

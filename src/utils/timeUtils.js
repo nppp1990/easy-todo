@@ -14,3 +14,17 @@ export function getDateStr(dateStr) {
   }
   return null
 }
+
+export function isExpire(dataStr, timeStr) {
+  if (!dataStr) {
+    return false
+  }
+  let date
+  if (timeStr) {
+    date = new dayjs(dataStr + 'T' + timeStr)
+  } else {
+    date = new dayjs(dataStr).add(1, 'day')
+  }
+  return date.unix() < new dayjs().unix();
+
+}

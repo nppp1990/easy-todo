@@ -57,6 +57,7 @@ const dateFormat = computed(() => {
 })
 
 let changeListener = () => {
+  const input = rootRef.value.getElementsByTagName('input')[0]
   let inputValue = input.value.trim()
   if (inputValue === '今天') {
     date.value = dayjs().format()
