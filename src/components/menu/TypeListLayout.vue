@@ -61,6 +61,11 @@ const emit = defineEmits(['rightClickItem'])
 const { saveItem } = inject(INJECTION_KEY_EDIT_LAYOUT)
 const currentTypeStore = useCurrentTypeStore()
 
+// const list = ref(getTypeList())
+const list = currentTypeStore.allTodoTypeList
+// const test = currentTypeStore.allTodoTypeList
+// test.splice(0, 1)
+
 function updateCurrentType(item) {
   saveItem()
   nextTick(() => {
@@ -70,7 +75,7 @@ function updateCurrentType(item) {
 
 // 列表数据展示相关
 const {
-  list, currentId,
+  currentId,
   onItemClicked,
 } = useTypeList()
 
@@ -87,8 +92,6 @@ const {
 } = useContextMenu(list, refContextMenu, emit, currentId)
 
 function useTypeList() {
-
-  const list = ref(getTypeList())
   watch(list, (newValue) => {
     updateTypeList(newValue)
   }, { deep: true })
@@ -97,7 +100,7 @@ function useTypeList() {
   watch(currentId, (id) => {
     saveLastTypeId(id)
   })
-  updateCurrentType(getTypeItemById(list.value, currentId.value))
+  updateCurrentType(getTypeItemById(list, currentId.value))
 
   function onItemClicked(item) {
     currentId.value = item.id
@@ -162,12 +165,12 @@ function useTypeListDrag(list, refListLayout, refMenuList) {
     // 要插入的位置
     let insertIndex = overIndex.value
     if (moveIndex !== insertIndex) {
-      const moveItem = list.value[moveIndex]
-      list.value.splice(moveIndex, 1)
+      const moveItem = list[moveIndex]
+      list.splice(moveIndex, 1)
       if (moveIndex > insertIndex) {
         insertIndex++
       }
-      list.value.splice(insertIndex, 0, moveItem)
+      list.splice(insertIndex, 0, moveItem)
     }
     isDragging.value = false
     isDraggingOut.value = true
@@ -197,7 +200,7 @@ function useTypeListDrag(list, refListLayout, refMenuList) {
     isDraggingOut.value = false
     if (clientY > menuRect.value.bottom) {
       // 最底下
-      overIndex.value = list.value.length - 1
+      overIndex.value = list.length - 1
     }
   }
 
@@ -270,19 +273,17 @@ function useContextMenu(list, refContextMenu, emit, currentId) {
     } else if (index !== undefined) {
       // 点击menu
       const type = menuList[index].type
-
       if (type === 'delete') {
-        let typeItem = list.value[activeIndex.value]
-        // list.value.splice(activeIndex.value, 1)
+        let typeItem = list[activeIndex.value]
         if (getTodoCount(typeItem) > 0) {
           dialog.value.showDeleteDialog = true
           dialog.value.title = typeItem.name
           return
         } else {
-          list.value.splice(activeIndex.value, 1)
+          deleteType()
         }
       } else if (type === 'showType') {
-        let typeItem = list.value[activeIndex.value]
+        let typeItem = list[activeIndex.value]
         emit('rightClickItem', { typeItem, type, index, subIndex })
       } else if (type === 'rename') {
         currentEditIndex.value = activeIndex.value
@@ -301,21 +302,22 @@ function useContextMenu(list, refContextMenu, emit, currentId) {
   function deleteType() {
     const deleteIndex = activeIndex.value
     nextTick(() => {
-      let isDelCurrent = list.value[deleteIndex].id === currentId.value
-      list.value.splice(deleteIndex, 1)
+      let isDelCurrent = list[deleteIndex].id === currentId.value
+      currentTypeStore.deleteType(list[deleteIndex])
+      list.splice(deleteIndex, 1)
       // todo 暂时还没做list为空的情况
       if (isDelCurrent) {
-        currentId.value = list.value[0].id
-        updateCurrentType(list.value[0])
+        currentId.value = list[0].id
+        updateCurrentType(list[0])
       }
     })
   }
 
   function onNameModify(index, name) {
     currentEditIndex.value = -1
-    list.value[index].name = name
-    if (currentId.value === list.value[index].id) {
-      updateCurrentType(list.value[index])
+    list[index].name = name
+    if (currentId.value === list[index].id) {
+      updateCurrentType(list[index])
     }
   }
 
@@ -333,7 +335,8 @@ function changeStatus(isSelected, currentId) {
 }
 
 function addType(item) {
-  list.value.push(item)
+  list.push(item)
+  currentTypeStore.addType(item)
   nextTick(() => {
     currentId.value = item.id
     updateCurrentType(item)
@@ -345,12 +348,16 @@ function addType(item) {
 }
 
 function modifyItem(newItem) {
-  const oldIndex = list.value.findIndex(item => item.id === newItem.id)
+  const oldIndex = list.findIndex(item => item.id === newItem.id)
   if (oldIndex !== -1) {
     console.log('---newItem', newItem)
-    list.value[oldIndex] = { ...list.value[oldIndex], ...newItem }
+    // list[oldIndex] = { ...list[oldIndex], ...newItem }
+    let { name, colorIndex, svgIndex } = newItem
+    list[oldIndex].name = name
+    list[oldIndex].colorIndex = colorIndex
+    list[oldIndex].svgIndex = svgIndex
     currentId.value = newItem.id
-    updateCurrentType(list.value[oldIndex])
+    updateCurrentType(list[oldIndex])
   }
 }
 

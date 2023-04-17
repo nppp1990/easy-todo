@@ -1,9 +1,64 @@
 import { defineStore } from "pinia";
-import { ref } from "vue";
+import { computed, ref, watchEffect } from "vue";
+import { getDocList, getTypeItemById } from "@/utils/typeUtils";
+import { getTypeList } from "@/storage/type";
+import { isBeforeToday } from "@/utils/timeUtils";
+import { getLastTypeId } from "@/storage/history";
 
 export const useCurrentTypeStore = defineStore('currentType', () => {
+  const allTodoMap = ref(new Map())
+  const allTodoTypeList = ref([])
+  // 如果是计算属性会不会影响性能？
+  const countInfo = computed(() => {
+    let allCount = 0
+    let todoCount = 0
+    let todayCount = 0
+    for (const [type, itemList] of allTodoMap.value.entries()) {
+      allCount += type.idList.length
+      for (const item of itemList) {
+        if (item.done) {
+          continue
+        }
+        if (item.date && item.date.length > 0) {
+          // 有日期
+          todoCount++
+        }
+        if (item.date && isBeforeToday(item.date)) {
+          todayCount++
+        }
+      }
+    }
+    return { allCount, todoCount, todayCount }
+  })
+
+
+  watchEffect(()=>{
+
+  })
+
+  const loadData = () => {
+    let typeList = getTypeList()
+    allTodoTypeList.value = typeList
+    let map = new Map()
+    for (const type of typeList) {
+      let todoList = getDocList(type)
+      map.set(type, todoList)
+    }
+    allTodoMap.value = map
+    updateCurrentType(getTypeItemById(typeList, getLastTypeId()))
+  }
+
+  const addType = (type) => {
+    allTodoMap.value.set(type, [])
+  }
+
+  const deleteType = (type) => {
+    allTodoMap.value.delete(type)
+  }
+
   // todo 这里改成idList:[{id:1, done: true}, {id:2, done: false}] 更合理点
   // todo 但是我代码已经写成这样了、懒得改过去了
+
   let item = ref({
     colorIndex: 1,
     svgIndex: 0,
@@ -51,6 +106,10 @@ export const useCurrentTypeStore = defineStore('currentType', () => {
   }
 
   return {
+    allTodoMap, allTodoTypeList,
+    loadData,
+    deleteType, addType,
+    countInfo,
     item, updateCurrentType, addTodoItem,
     addDoneItem,
     delAllDoneItem,

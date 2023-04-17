@@ -1,6 +1,5 @@
 <template>
   <div class="menu-layout">
-    <!--  todo: 怎么做一个聚焦后、border变大的特效、并且保证内容位置不变  -->
     <div class="input-wrapper">
       <input type="text" placeholder="搜索" v-model="searchText">
       <img src="src/assets/svg/ic_search.svg" alt="" class="input-search">
@@ -10,11 +9,14 @@
     </div>
     <div class="todo-card-layout" @contextmenu.prevent="onMouseRightClick($event)">
       <card-item class="todo-item item-left" :card-type="1" :is-selected="currentCard=== 1"
+                 :count="currentTypeStore.countInfo.todayCount"
                  @click="onClickCard(1)" />
       <card-item class="todo-item" :card-type="2" :is-selected="currentCard=== 2"
+                 :count="currentTypeStore.countInfo.todoCount"
                  @click="onClickCard(2)" />
     </div>
     <card-item class="all-card" :card-type="3" :is-selected="currentCard=== 3"
+               :count="currentTypeStore.countInfo.allCount"
                @click="onClickCard(3)"
                @contextmenu.prevent="onMouseRightClick($event)" />
     <type-list-layout ref="typeList" style="margin-top: 16px; margin-bottom: 30px;" @right-click-item="onTypeListContextSelected" />
@@ -37,6 +39,8 @@ import TypeListLayout from "@/components/menu/TypeListLayout.vue";
 import TypeDialogLayout from "@/components/menu/TypeDialogLayout.vue";
 import { nextTick, ref, watch } from "vue";
 import { useTypeStore } from "@/store/type";
+import { getAllTodoMap } from "@/utils/typeUtils";
+import { useCurrentTypeStore } from "@/store/currentType";
 
 const currentCard = ref(1)
 const searchText = ref('')
@@ -44,6 +48,8 @@ const showTypeDialog = ref(false)
 
 const dialogContent = ref(null)
 const typeList = ref(null)
+const currentTypeStore = useCurrentTypeStore()
+
 
 
 watch(showTypeDialog, (newShow) => {
@@ -55,6 +61,7 @@ watch(showTypeDialog, (newShow) => {
 })
 
 const onClickCard = (type) => {
+  console.log('----onClickCard', type, getAllTodoMap())
   currentCard.value = type
 }
 const typeStore = useTypeStore()
@@ -95,7 +102,6 @@ const onTypeListContextSelected = (res) => {
           typeId: id,
         })
       })
-
     }
   }
 }

@@ -1,7 +1,7 @@
 <template>
   <div ref="refRoot">
     <div class="edit-root" ref="refTodoList">
-      <span v-show="todoList.length === 0">没有提醒事项</span>
+      <span v-show="showList.length === 0">没有提醒事项</span>
       <div class="header-layout flex-shrink0">
         <span class="tip">{{ doneCount }}项已完成&nbsp;·&nbsp;</span>
         <span :style="colorStyle" @click="clearDone"> 清除</span>
@@ -31,7 +31,7 @@
 </template>
 <script setup>
 import EditItem from "@/components/edit/EditItem.vue";
-import { computed, nextTick, ref, watch } from "vue";
+import { computed, nextTick, ref } from "vue";
 import { useCurrentTypeStore } from "@/store/currentType";
 import { delDoc, saveDoc } from "@/storage/type";
 import { createTodoDoc } from "@/service";
@@ -172,8 +172,7 @@ function handleLastItem(lastIndex = currentShowIndex) {
 
 function initList(type) {
   currentTypeId.value = type.id
-  // todo 暂时每次都从storage取、可以从内存取的、但是麻烦点
-  todoList.value = getDocList(type)
+  todoList.value = currentTypeStore.allTodoMap.get(type)
   currentShowIndex = -1
   nextTick(() => {
     refRoot.value.scrollTo({ top: 41 })

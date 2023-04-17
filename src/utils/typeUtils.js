@@ -1,4 +1,21 @@
-import { getDocById } from "@/storage/type";
+import { getDocById, getTypeList } from "@/storage/type";
+
+const TYPE_TODAY_ID = -100
+const TYPE_TODO_ID = -200
+const TYPE_ALL_ID = -300
+
+export class TodoType {
+  constructor(id, name, colorIndex, svgIndex = -1) {
+    this.id = id
+    this.name = name
+    this.colorIndex = colorIndex
+    this.svgIndex = svgIndex
+  }
+}
+
+const TODO_TYPE_TPDAY = new TodoType(TYPE_TODAY_ID, '今天', 5)
+const TODO_TYPE_TODO = new TodoType(TYPE_TODO_ID, '计划', 0)
+const TODO_TYPE_ALL = new TodoType(TYPE_ALL_ID, '全部', 10)
 
 export class TodoDoc {
   constructor(id, name = '', note = '', date = '', timer = '', isFlag = false,
@@ -21,6 +38,7 @@ export class TodoDoc {
 }
 
 export function getTypeItemById(typeList, typeId) {
+  console.log('---tyli', typeList, typeId)
   if (typeId < 0) {
     // 今天、计划、全部 todoTest
     return { colorIndex: 1, svgIndex: 0, name: 'name1', count: 0, id: typeId, idList: [], doneIdList: [] }
@@ -130,4 +148,13 @@ export function getInsertIndex(list, insertItem) {
     }
     return i
   }
+}
+
+export function getAllTodoMap() {
+  let map = new Map()
+  let typeList = getTypeList()
+  for (const type of typeList) {
+    map.set(type, getDocList(type))
+  }
+  return map
 }

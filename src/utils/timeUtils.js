@@ -15,6 +15,14 @@ export function getDateStr(dateStr) {
   return null
 }
 
+export function isBeforeToday(dataStr) {
+  if (!dataStr) {
+    return false
+  }
+  const date = new dayjs(dataStr).add(1, 'day')
+  return date.unix() < new dayjs().unix();
+}
+
 export function isExpire(dataStr, timeStr) {
   if (!dataStr) {
     return false
@@ -26,5 +34,4 @@ export function isExpire(dataStr, timeStr) {
     date = new dayjs(dataStr).add(1, 'day')
   }
   return date.unix() < new dayjs().unix();
-
 }
