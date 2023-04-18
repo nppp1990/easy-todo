@@ -8,14 +8,14 @@
       </div>
     </div>
     <div class="todo-card-layout" @contextmenu.prevent="onMouseRightClick($event)">
-      <card-item class="todo-item item-left" :card-type="1" :is-selected="currentCard=== 1"
+      <card-item class="todo-item item-left" :card-type="1" :is-selected="isCardSelected(1)"
                  :count="currentTypeStore.countInfo.todayCount"
                  @click="onClickCard(1)" />
-      <card-item class="todo-item" :card-type="2" :is-selected="currentCard=== 2"
+      <card-item class="todo-item" :card-type="2" :is-selected="isCardSelected(2)"
                  :count="currentTypeStore.countInfo.todoCount"
                  @click="onClickCard(2)" />
     </div>
-    <card-item class="all-card" :card-type="3" :is-selected="currentCard=== 3"
+    <card-item class="all-card" :card-type="3" :is-selected="isCardSelected(3)"
                :count="currentTypeStore.countInfo.allCount"
                @click="onClickCard(3)"
                @contextmenu.prevent="onMouseRightClick($event)" />
@@ -39,17 +39,15 @@ import TypeListLayout from "@/components/menu/TypeListLayout.vue";
 import TypeDialogLayout from "@/components/menu/TypeDialogLayout.vue";
 import { nextTick, ref, watch } from "vue";
 import { useTypeStore } from "@/store/type";
-import { getAllTodoMap } from "@/utils/typeUtils";
+import { TODO_TYPE_TODAY, TYPE_ALL_ID, TYPE_TODAY_ID, TYPE_TODO_ID } from "@/utils/typeUtils";
 import { useCurrentTypeStore } from "@/store/currentType";
 
-const currentCard = ref(1)
 const searchText = ref('')
 const showTypeDialog = ref(false)
 
 const dialogContent = ref(null)
 const typeList = ref(null)
 const currentTypeStore = useCurrentTypeStore()
-
 
 
 watch(showTypeDialog, (newShow) => {
@@ -60,9 +58,20 @@ watch(showTypeDialog, (newShow) => {
   }
 })
 
+function isCardSelected(type) {
+  const typeId = currentTypeStore.item.id
+  if (type === 1) {
+    return typeId === TYPE_TODAY_ID
+  } else if (type === 2) {
+    return typeId === TYPE_TODO_ID
+  } else if (type === 3) {
+    return typeId === TYPE_ALL_ID
+  }
+  return false
+}
+
 const onClickCard = (type) => {
-  console.log('----onClickCard', type, getAllTodoMap())
-  currentCard.value = type
+  currentTypeStore.updateCurrentType(TODO_TYPE_TODAY)
 }
 const typeStore = useTypeStore()
 
@@ -93,7 +102,7 @@ const onTypeListContextSelected = (res) => {
     if (typeItem) {
       showTypeDialog.value = true
       let { colorIndex, svgIndex, name, id } = typeItem
-      nextTick(()=>{
+      nextTick(() => {
         dialogContent.value.showDialog({
           title: `"${ name }"简介`,
           name,
@@ -108,7 +117,7 @@ const onTypeListContextSelected = (res) => {
 
 const addType = () => {
   showTypeDialog.value = true
-  nextTick(()=>{
+  nextTick(() => {
     dialogContent.value.showDialog({})
   })
 

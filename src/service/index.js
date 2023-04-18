@@ -15,6 +15,6 @@ export const createType = (typeInfo) => {
   return Promise.resolve(res)
 }
 
-export function createTodoDoc() {
-  return new TodoDoc(useTypeStore().incrementDocId())
+export function createTodoDoc(typeId) {
+  return new TodoDoc(useTypeStore().incrementDocId(), typeId)
 }

@@ -17,7 +17,7 @@
 <script setup>
 import dayjs from "dayjs";
 import { computed, h, onBeforeUnmount, onMounted, ref } from "vue";
-import { getDateStr } from "@/utils/timeUtils";
+import { getSpecialDateStr } from "@/utils/timeUtils";
 
 const props = defineProps(['modelValue'])
 const emit = defineEmits(['update:modelValue'])
@@ -49,7 +49,7 @@ const dateClearIcon = h('img', {
 })
 
 const dateFormat = computed(() => {
-  let dateStr = getDateStr(date.value)
+  let dateStr = getSpecialDateStr(date.value)
   if (dateStr) {
     return dateStr
   }

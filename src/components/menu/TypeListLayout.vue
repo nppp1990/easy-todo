@@ -14,7 +14,7 @@
                      :svg-name="`ic_type_white${item.svgIndex}`"
                      :color="`${colorList[item.colorIndex]}`"
                      :edit="index === currentEditIndex"
-                     class="menu-item-layout" :class="{ 'item-selected': item.id === currentId, 'status-active': index === activeIndex}"
+                     class="menu-item-layout" :class="{ 'item-selected': item.id === currentTypeId, 'status-active': index === activeIndex}"
                      @click="onItemClicked(item)"
                      draggable="true"
                      @drag="onDrag($event)"
@@ -43,11 +43,12 @@ import ContextMenu from "@/components/common/ContextMenu.vue";
 import { TYPE_COLOR_LIST } from "@/components/menu/menuConstants";
 import { inject, nextTick, onMounted, reactive, ref, watch } from "vue";
 import { useCurrentTypeStore } from "@/store/currentType";
-import { getTypeList, updateTypeList } from "@/storage/type";
+import { updateTypeList } from "@/storage/type";
 import { getLastTypeId, saveLastTypeId } from "@/storage/history";
 import { getTodoCount, getTypeItemById } from "@/utils/typeUtils";
 import { INJECTION_KEY_EDIT_LAYOUT } from "@/utils/constant";
 import FeedbackDialog from "@/components/common/FeedbackDialog.vue";
+import { storeToRefs } from "pinia";
 
 // 这里和.menu-item-layout的高度保持同步
 const MENU_ITEM_HEIGHT = 36
@@ -60,6 +61,7 @@ const emit = defineEmits(['rightClickItem'])
 
 const { saveItem } = inject(INJECTION_KEY_EDIT_LAYOUT)
 const currentTypeStore = useCurrentTypeStore()
+const {currentTypeId} = storeToRefs(currentTypeStore)
 
 // const list = ref(getTypeList())
 const list = currentTypeStore.allTodoTypeList
@@ -75,7 +77,6 @@ function updateCurrentType(item) {
 
 // 列表数据展示相关
 const {
-  currentId,
   onItemClicked,
 } = useTypeList()
 
@@ -89,26 +90,19 @@ const {
 const {
   currentEditIndex, activeIndex, menuList, dialog,
   onMouseRightClick, onContextMenuClosed, deleteType, onNameModify
-} = useContextMenu(list, refContextMenu, emit, currentId)
+} = useContextMenu(list, refContextMenu, emit)
 
 function useTypeList() {
   watch(list, (newValue) => {
     updateTypeList(newValue)
   }, { deep: true })
-  // 上一次选中的typeId
-  const currentId = ref(getLastTypeId())
-  watch(currentId, (id) => {
-    saveLastTypeId(id)
-  })
-  updateCurrentType(getTypeItemById(list, currentId.value))
 
   function onItemClicked(item) {
-    currentId.value = item.id
     updateCurrentType(item)
   }
 
   return {
-    list, currentId,
+    list,
     updateCurrentType, onItemClicked,
   }
 }
@@ -220,7 +214,7 @@ function useTypeListDrag(list, refListLayout, refMenuList) {
   }
 }
 
-function useContextMenu(list, refContextMenu, emit, currentId) {
+function useContextMenu(list, refContextMenu, emit) {
   const currentEditIndex = ref(-1)
   const activeIndex = ref(-2)
 
@@ -302,12 +296,11 @@ function useContextMenu(list, refContextMenu, emit, currentId) {
   function deleteType() {
     const deleteIndex = activeIndex.value
     nextTick(() => {
-      let isDelCurrent = list[deleteIndex].id === currentId.value
+      let isDelCurrent = list[deleteIndex].id === currentTypeId.value
       currentTypeStore.deleteType(list[deleteIndex])
       list.splice(deleteIndex, 1)
       // todo 暂时还没做list为空的情况
       if (isDelCurrent) {
-        currentId.value = list[0].id
         updateCurrentType(list[0])
       }
     })
@@ -316,7 +309,7 @@ function useContextMenu(list, refContextMenu, emit, currentId) {
   function onNameModify(index, name) {
     currentEditIndex.value = -1
     list[index].name = name
-    if (currentId.value === list[index].id) {
+    if (currentTypeId.value === list[index].id) {
       updateCurrentType(list[index])
     }
   }
@@ -327,18 +320,10 @@ function useContextMenu(list, refContextMenu, emit, currentId) {
   }
 }
 
-function changeStatus(isSelected, currentId) {
-  isSelected.value = isSelected
-  if (currentId !== undefined) {
-    currentId.value = currentId
-  }
-}
-
 function addType(item) {
   list.push(item)
   currentTypeStore.addType(item)
   nextTick(() => {
-    currentId.value = item.id
     updateCurrentType(item)
     refListLayout.value.scrollTo({
       top: refListLayout.value.scrollHeight,
@@ -356,12 +341,12 @@ function modifyItem(newItem) {
     list[oldIndex].name = name
     list[oldIndex].colorIndex = colorIndex
     list[oldIndex].svgIndex = svgIndex
-    currentId.value = newItem.id
+    // currentId.value = newItem.id
     updateCurrentType(list[oldIndex])
   }
 }
 
-defineExpose({ changeStatus, addType, modifyItem })
+defineExpose({ addType, modifyItem })
 
 onMounted(() => {
   // const typeStore = useTypeStore()

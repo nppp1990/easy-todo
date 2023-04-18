@@ -1,34 +1,37 @@
 <template>
   <div class="edit-item-root" ref="refItem">
     <label class="radio">
-      <input type="checkbox" v-model="isDone">
+      <input type="checkbox" v-model="cacheData.done">
       <div class="checkmark" />
     </label>
     <div class="info-layout">
-      <input class="input-item name" type="text" v-model="name" ref="refNameInput"
+      <input class="input-item name" type="text" v-model="cacheData.name" ref="refNameInput"
              @click.stop="onClickSpan"
              @keydown.enter="onNameInputEnter($event)">
       <el-collapse-transition>
         <div v-show="showExtra || note.length > 0">
           <el-input class="remark" type="textarea" placeholder="备注"
                     :autosize="{ minRows: 1, maxRows: 5 }"
-                    @click.stop="onClickSpan" v-model="note" ref="refNoteInput">
+                    @click.stop="onClickSpan" v-model="cacheData.note" ref="refNoteInput">
           </el-input>
         </div>
       </el-collapse-transition>
       <el-collapse-transition>
         <div v-if="showExtra" class="other-info">
-          <todo-date-picker v-model="date" />
-          <todo-time-picker class="label-right" v-model="timer"
-                            :style="`display: ${date.length > 0 ? 'block' : 'none'} `" />
+          <todo-date-picker v-model="cacheData.date" />
+          <todo-time-picker class="label-right" v-model="cacheData.timer"
+                            :style="`display: ${date ? 'block' : 'none'} `" />
           <div class="label-layout label label-right">#</div>
-          <div class="label-layout flag label-right" @click="isFlag = !isFlag">
+          <div class="label-layout flag label-right" @click="cacheData.sFlag = !cacheData.isFlag">
             <img :src="`src/assets/svg/ic_flag${isFlag ? '_selected' : ''}.svg`" alt="">
           </div>
         </div>
       </el-collapse-transition>
       <template v-if="!showExtra">
-        <span v-if="date.length > 0" class="extra_content" :class="extraContentClass" @click.stop="onClickSpan">{{ extraContent }}</span>
+        <div class="extra_content">
+          <span v-if="extraTypeName">{{ extraTypeName }}</span>
+          <span v-if="extraTime" :class="extraContentClass" @click.stop="onClickSpan">{{ extraTime }}</span>
+        </div>
       </template>
       <div class="divider" />
     </div>
@@ -38,8 +41,8 @@
 import TodoDatePicker from "@/components/edit/TodoDatePicker.vue";
 import TodoTimePicker from "@/components/edit/TodoTimePicker.vue";
 import { defineAttrFromProps } from "@/utils/vueUtils";
-import { computed, ref, watch } from "vue";
-import { getDateStr, isExpire } from "@/utils/timeUtils";
+import { computed, reactive, ref, watch } from "vue";
+import { getSpecialDateStr, isExpire } from "@/utils/timeUtils";
 
 const props = defineProps({
   name: {
@@ -69,6 +72,10 @@ const props = defineProps({
   showExtra: {
     type: Boolean,
     default: false,
+  },
+  typeName: {
+    type: String,
+    default: '',
   }
 })
 const emit = defineEmits([
@@ -86,20 +93,44 @@ function defineAttr(key, notifyChange = true) {
   return defineAttrFromProps(props, emit, key, notifyChange ? 'itemChange' : null)
 }
 
-const name = defineAttr('name')
-const note = defineAttr('note')
-const date = defineAttr('date')
-const timer = defineAttr('timer')
-const isFlag = defineAttr('isFlag')
-const isDone = defineAttr('done')
+const cacheData = reactive({
+  name: props.name,
+  note: props.note,
+  date: props.date,
+  timer: props.timer,
+  isFlag: props.isFlag,
+  done: props.done
+})
+
+watch(() => cacheData.done, (done) => {
+  if (!showExtra.value) {
+    emit('update:done', done)
+  }
+})
+// const name = defineAttr('name')
+// const note = defineAttr('note')
+// const date = defineAttr('date')
+// const timer = defineAttr('timer')
+// const isFlag = defineAttr('isFlag')
+// const isDone = defineAttr('done')
 
 const refNameInput = ref(null)
 const refNoteInput = ref(null)
+const showExtra = defineAttr('showExtra', false)
 
 watch(() => props.showExtra, (show) => {
-  if (show && !isFocused()) {
-    // 只有当前todoItem、没有焦点时才聚焦到name
-    refNameInput.value.focus()
+  if (show) {
+    if (!isFocused()) {
+      // 只有当前todoItem、没有焦点时才聚焦到name
+      refNameInput.value.focus()
+    }
+  } else {
+    for (const key in cacheData) {
+      if (props[key] === cacheData[key]) {
+        continue
+      }
+      emit('update:' + key, cacheData[key])
+    }
   }
 })
 
@@ -113,21 +144,33 @@ function isFocused() {
   return activeElement && (refNoteInput.value.ref === activeElement || refNameInput.value === activeElement)
 }
 
-const showExtra = defineAttr('showExtra', false)
-
-const extraContent = computed(() => {
-  let dateStr = getDateStr(date.value)
-  if (!dateStr) {
-    dateStr = date.value
+const extraTypeName = computed(() => {
+  if (!props.typeName) {
+    return ''
   }
-  if (timer.value.length > 0) {
-    return dateStr + ' ' + timer.value
+  if (cacheData.name) {
+    return props.typeName + ' - '
+  } else {
+    return props.typeName
+  }
+})
+
+const extraTime = computed(() => {
+  if (!cacheData.date) {
+    return ''
+  }
+  let dateStr = getSpecialDateStr(cacheData.date)
+  if (!dateStr) {
+    dateStr = cacheData.date
+  }
+  if (cacheData.timer) {
+    return dateStr + ' ' + cacheData.timer
   }
   return dateStr
 })
 
 const extraContentClass = computed(() => {
-  let expire = isExpire(date.value, timer.value)
+  let expire = isExpire(cacheData.date, cacheData.timer)
   return { expire }
 })
 
@@ -275,7 +318,7 @@ defineExpose({
       font-size: inherit;
       color: var(--el-text-color-placeholder);
 
-      &.expire {
+      .expire {
         color: #fb4743;
       }
     }

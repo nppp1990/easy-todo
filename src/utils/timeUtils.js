@@ -1,6 +1,10 @@
 import dayjs from "dayjs";
 
-export function getDateStr(dateStr) {
+export function getTodayStr() {
+  return dayjs().format('YYYY-MM-DD')
+}
+
+export function getSpecialDateStr(dateStr) {
   const curDate = dayjs(dateStr, 'YYYY-MM-DD')
   if (curDate.isToday()) {
     return '今天'
@@ -15,23 +19,36 @@ export function getDateStr(dateStr) {
   return null
 }
 
-export function isBeforeToday(dataStr) {
-  if (!dataStr) {
+export function isBeforeToday(dateStr) {
+  if (!dateStr) {
     return false
   }
-  const date = new dayjs(dataStr).add(1, 'day')
-  return date.unix() < new dayjs().unix();
+  const date = new dayjs(dateStr)
+  return date.unix() < new dayjs().unix()
 }
 
-export function isExpire(dataStr, timeStr) {
-  if (!dataStr) {
+export function isExpire(dateStr, timeStr) {
+  if (!dateStr) {
     return false
   }
   let date
   if (timeStr) {
-    date = new dayjs(dataStr + 'T' + timeStr)
+    date = new dayjs(dateStr + 'T' + timeStr)
   } else {
-    date = new dayjs(dataStr).add(1, 'day')
+    date = new dayjs(dateStr).add(1, 'day')
   }
-  return date.unix() < new dayjs().unix();
+  return date.unix() < new dayjs().unix()
+}
+
+export function getTime(dateStr, timeStr) {
+  if (!dateStr) {
+    return 0
+  }
+  let date
+  if (timeStr) {
+    date = new dayjs(dateStr + 'T' + timeStr)
+  } else {
+    date = new dayjs(dateStr).add(1, 'day')
+  }
+  return date.unix()
 }

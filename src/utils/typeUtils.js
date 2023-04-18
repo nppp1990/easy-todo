@@ -1,8 +1,9 @@
 import { getDocById, getTypeList } from "@/storage/type";
+import { getTime } from "@/utils/timeUtils";
 
-const TYPE_TODAY_ID = -100
-const TYPE_TODO_ID = -200
-const TYPE_ALL_ID = -300
+export const TYPE_TODAY_ID = -100
+export const TYPE_TODO_ID = -200
+export const TYPE_ALL_ID = -300
 
 export class TodoType {
   constructor(id, name, colorIndex, svgIndex = -1) {
@@ -10,17 +11,20 @@ export class TodoType {
     this.name = name
     this.colorIndex = colorIndex
     this.svgIndex = svgIndex
+    this.idList = []
+    this.doneIdList = []
   }
 }
 
-const TODO_TYPE_TPDAY = new TodoType(TYPE_TODAY_ID, '今天', 5)
-const TODO_TYPE_TODO = new TodoType(TYPE_TODO_ID, '计划', 0)
-const TODO_TYPE_ALL = new TodoType(TYPE_ALL_ID, '全部', 10)
+export const TODO_TYPE_TODAY = new TodoType(TYPE_TODAY_ID, '今天', 5)
+export const TODO_TYPE_TODO = new TodoType(TYPE_TODO_ID, '计划', 0)
+export const TODO_TYPE_ALL = new TodoType(TYPE_ALL_ID, '全部', 10)
 
 export class TodoDoc {
-  constructor(id, name = '', note = '', date = '', timer = '', isFlag = false,
+  constructor(id, typeId, name = '', note = '', date = '', timer = '', isFlag = false,
               showExtra = false, saved = false, done = false) {
     this.id = id
+    this.typeId = typeId
     this.name = name
     this.note = note
     this.date = date
@@ -39,9 +43,9 @@ export class TodoDoc {
 
 export function getTypeItemById(typeList, typeId) {
   console.log('---tyli', typeList, typeId)
-  if (typeId < 0) {
+  if (typeId === TYPE_TODAY_ID) {
     // 今天、计划、全部 todoTest
-    return { colorIndex: 1, svgIndex: 0, name: 'name1', count: 0, id: typeId, idList: [], doneIdList: [] }
+    return TODO_TYPE_TODAY
   }
   return typeList[typeList.findIndex(item => item.id === typeId)]
 }
@@ -77,6 +81,18 @@ export function getDocList(typeItem) {
   return list
 }
 
+
+export function generateLastId(list) {
+  let ids = list.map(item => item.sortId).sort((v1, v2) => {
+    if (v1 < v2) {
+      return -1
+    } else if (v1 > v2) {
+      return 1
+    }
+    return 0
+  })
+  return ids[ids.length - 1] + 1
+}
 
 // 保证插入的id满足pre<id<next
 export function generateSortId(list, index) {
@@ -115,11 +131,13 @@ export function generateSortId(list, index) {
 
 /**
  * 根据当前的item的状态判断实际应该在的位置
- * @param list
- * @param insertItem 必须包含sortId
+ * @param list 原始数据
+ * @param preItem
+ * @param sortCompareFunc 用于排序的接口
  * @returns {*|number}
  */
-export function getInsertIndex(list, insertItem) {
+export function getInsertIndex(list, preItem, sortCompareFunc) {
+
   // if (noNeedChangeIndex(list, insertItem, currentIndex)) {
   //   return currentIndex
   // }
@@ -150,11 +168,36 @@ export function getInsertIndex(list, insertItem) {
   }
 }
 
-export function getAllTodoMap() {
-  let map = new Map()
-  let typeList = getTypeList()
-  for (const type of typeList) {
-    map.set(type, getDocList(type))
+// export function getAllTodoMap() {
+//   let map = new Map()
+//   let typeList = getTypeList()
+//   for (const type of typeList) {
+//     map.set(type, getDocList(type))
+//   }
+//   return map
+// }
+
+export function timeSortCompare(item1, item2) {
+  let time1 = getTime(item1.date, item1.timer)
+  let time2 = getTime(item2.date, item2.timer)
+  if (time1 === time2) {
+    return 0
   }
-  return map
+  if (time1 < time2) {
+    return -1
+  }
+  return 1
+}
+
+export function idSortCompare(item1, item2) {
+  if (item1.done !== item2.done) {
+    if (item1.done) {
+      return 1
+    }
+    return -1
+  }
+  if (item1.sortId < item2.sortId) {
+    return -1
+  }
+  return 1
 }
