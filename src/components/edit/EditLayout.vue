@@ -28,11 +28,14 @@
       </TransitionGroup>
       <div class="other-layout flex-shrink0" @click="onClickBlank"></div>
     </div>
+    <feedback-dialog title="没有默认列表" message="若要在此列表中创建提醒事项，请前往首页创建默认列表" sure-text="创建"
+                     v-model:show="showNoTypeDialog"
+                     @on-sure="tryCreateType" />
   </div>
 </template>
 <script setup>
 import EditItem from "@/components/edit/EditItem.vue";
-import { computed, nextTick, reactive, ref } from "vue";
+import { computed, inject, nextTick, reactive, ref } from "vue";
 import { useCurrentTypeStore } from "@/store/currentType";
 import { delDoc, saveDoc } from "@/storage/type";
 import { createTodoDoc } from "@/service";
@@ -40,6 +43,7 @@ import { generateLastId, generateSortId, idSortCompare, timeSortCompare, TYPE_AL
 import { TYPE_COLOR_LIST } from "@/components/menu/menuConstants";
 import FeedbackDialog from "@/components/common/FeedbackDialog.vue";
 import { getTodayStr, isBeforeToday } from "@/utils/timeUtils";
+import { INJECTION_KEY_MENU_LAYOUT } from "@/utils/constant";
 
 const todoList = ref([])
 const showDone = ref(true)
@@ -210,7 +214,10 @@ function isOtherType() {
 function createItem(preIndex) {
   let todoItem
   if (currentTypeId === TYPE_TODAY_ID) {
-    // todo size=0时提示创建一个type
+    if (currentTypeStore.allTodoTypeList.length === 0) {
+      showNoTypeDialog.value = true
+      return
+    }
     todoItem = createTodoDoc(currentTypeStore.allTodoTypeList[0].id)
     todoItem.date = getTodayStr()
   } else {
@@ -253,6 +260,8 @@ const colorStyle = computed(() => {
   return { color: TYPE_COLOR_LIST[colorIndex] }
 })
 const showClearDialog = ref(false)
+const showNoTypeDialog = ref(false)
+const menuLayout = inject(INJECTION_KEY_MENU_LAYOUT)
 
 function removeDoneList() {
   let doneList = todoList.value.filter(item => item.done)
@@ -268,6 +277,12 @@ function clearDone() {
     return
   }
   showClearDialog.value = true
+}
+
+function tryCreateType() {
+  if (menuLayout) {
+    menuLayout.tryCreateType()
+  }
 }
 
 /**
@@ -287,6 +302,7 @@ function addTodoItem() {
 }
 
 defineExpose({ addTodoItem, saveItem: handleLastItem })
+const emits = defineEmits(['needCreateType'])
 
 function saveNewTodo(todoItem, index) {
   let sortId

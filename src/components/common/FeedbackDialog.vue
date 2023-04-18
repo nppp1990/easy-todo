@@ -10,8 +10,8 @@
       <h3>{{ title }}</h3>
       <span class="message">{{ message }}。</span>
       <div style="margin-top: 16px">
-        <el-button @click="showDialog = false">取消</el-button>
-        <el-button type="primary" @click="onClickSure()">删除</el-button>
+        <el-button @click="showDialog = false">{{ cancelText }}</el-button>
+        <el-button type="primary" @click="onClickSure()">{{ sureText }}</el-button>
       </div>
     </div>
   </el-dialog>

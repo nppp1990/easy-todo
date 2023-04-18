@@ -120,8 +120,9 @@ const addType = () => {
   nextTick(() => {
     dialogContent.value.showDialog({})
   })
-
 }
+
+defineExpose({ createType: addType })
 </script>
 <style scoped lang="scss">
 @import "@/assets/style/type-dialog.scss";

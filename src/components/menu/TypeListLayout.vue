@@ -44,8 +44,7 @@ import { TYPE_COLOR_LIST } from "@/components/menu/menuConstants";
 import { inject, nextTick, onMounted, reactive, ref, watch } from "vue";
 import { useCurrentTypeStore } from "@/store/currentType";
 import { updateTypeList } from "@/storage/type";
-import { getLastTypeId, saveLastTypeId } from "@/storage/history";
-import { getTodoCount, getTypeItemById } from "@/utils/typeUtils";
+import { getTodoCount } from "@/utils/typeUtils";
 import { INJECTION_KEY_EDIT_LAYOUT } from "@/utils/constant";
 import FeedbackDialog from "@/components/common/FeedbackDialog.vue";
 import { storeToRefs } from "pinia";
@@ -61,7 +60,7 @@ const emit = defineEmits(['rightClickItem'])
 
 const { saveItem } = inject(INJECTION_KEY_EDIT_LAYOUT)
 const currentTypeStore = useCurrentTypeStore()
-const {currentTypeId} = storeToRefs(currentTypeStore)
+const { currentTypeId } = storeToRefs(currentTypeStore)
 
 // const list = ref(getTypeList())
 const list = currentTypeStore.allTodoTypeList
@@ -300,7 +299,9 @@ function useContextMenu(list, refContextMenu, emit) {
       currentTypeStore.deleteType(list[deleteIndex])
       list.splice(deleteIndex, 1)
       // todo 暂时还没做list为空的情况
-      if (isDelCurrent) {
+      if (list.length === 0) {
+        updateCurrentType(null)
+      } else if (isDelCurrent) {
         updateCurrentType(list[0])
       }
     })

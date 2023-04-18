@@ -24,7 +24,9 @@ export function saveDoc(doc) {
 }
 
 export function delDoc(doc) {
-  if (doc && doc.id) {
+  if (typeof doc === 'number') {
+    removeData(KEY_DOC_KEY + doc)
+  } else if (doc && doc.id) {
     removeData(KEY_DOC_KEY + doc.id)
   }
 }

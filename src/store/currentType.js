@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 import { computed, reactive, ref } from "vue";
 import { getDocList, getTypeItemById, TODO_TYPE_TODAY, TYPE_TODAY_ID } from "@/utils/typeUtils";
 import { isBeforeToday } from "@/utils/timeUtils";
+import { delDoc } from "@/storage/type";
 
 export const useCurrentTypeStore = defineStore('currentType', () => {
     const allTodoMap = ref(new Map())
@@ -65,15 +66,12 @@ export const useCurrentTypeStore = defineStore('currentType', () => {
     const item = ref(TODO_TYPE_TODAY)
 
     const loadData = () => {
-      // let typeList = getTypeList()
-      // allTodoTypeList.value = typeList
       let map = new Map()
       for (const type of allTodoTypeList.value) {
         let todoList = getDocList(type)
         map.set(type, todoList)
       }
       allTodoMap.value = map
-      // updateCurrentType(getTypeItemById(typeList, getLastTypeId()))
       updateCurrentType(getTypeItemById(allTodoTypeList.value, currentTypeId.value))
     }
 
@@ -98,11 +96,23 @@ export const useCurrentTypeStore = defineStore('currentType', () => {
 
     const deleteType = (type) => {
       allTodoMap.value.delete(type)
+      for (const id of type.idList) {
+        delDoc(id)
+      }
+      for (const id of type.doneIdList) {
+        delDoc(id)
+      }
     }
 
     const updateCurrentType = (typeItem) => {
-      currentTypeId.value = typeItem.id
-      item.value = typeItem
+      if (typeItem) {
+        currentTypeId.value = typeItem.id
+        item.value = typeItem
+      } else {
+        // item.value = TODO_TYPE_ALL
+        item.value = TODO_TYPE_TODAY
+        currentTypeId.value = item.value.id
+      }
     }
     const addNewItem = (todoItem) => {
       let type
