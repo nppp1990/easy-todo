@@ -12,7 +12,7 @@
                  :count="currentTypeStore.countInfo.todayCount"
                  @click="onClickCard(1)" />
       <card-item class="todo-item" :card-type="2" :is-selected="isCardSelected(2)"
-                 :count="currentTypeStore.countInfo.todoCount"
+                 :count="currentTypeStore.countInfo.planCount"
                  @click="onClickCard(2)" />
     </div>
     <card-item class="all-card" :card-type="3" :is-selected="isCardSelected(3)"
@@ -39,7 +39,7 @@ import TypeListLayout from "@/components/menu/TypeListLayout.vue";
 import TypeDialogLayout from "@/components/menu/TypeDialogLayout.vue";
 import { nextTick, ref, watch } from "vue";
 import { useTypeStore } from "@/store/type";
-import { TODO_TYPE_TODAY, TYPE_ALL_ID, TYPE_TODAY_ID, TYPE_TODO_ID } from "@/utils/typeUtils";
+import { TODO_TYPE_ALL, TODO_TYPE_TODAY, TODO_TYPE_PLAN, TYPE_ALL_ID, TYPE_TODAY_ID, TYPE_PLAN_ID } from "@/utils/typeUtils";
 import { useCurrentTypeStore } from "@/store/currentType";
 
 const searchText = ref('')
@@ -63,7 +63,7 @@ function isCardSelected(type) {
   if (type === 1) {
     return typeId === TYPE_TODAY_ID
   } else if (type === 2) {
-    return typeId === TYPE_TODO_ID
+    return typeId === TYPE_PLAN_ID
   } else if (type === 3) {
     return typeId === TYPE_ALL_ID
   }
@@ -71,7 +71,14 @@ function isCardSelected(type) {
 }
 
 const onClickCard = (type) => {
-  currentTypeStore.updateCurrentType(TODO_TYPE_TODAY)
+  if (type === 1) {
+    currentTypeStore.updateCurrentType(TODO_TYPE_TODAY)
+  } else if (type === 2) {
+    currentTypeStore.updateCurrentType(TODO_TYPE_PLAN)
+  } else {
+    currentTypeStore.updateCurrentType(TODO_TYPE_ALL)
+  }
+
 }
 const typeStore = useTypeStore()
 

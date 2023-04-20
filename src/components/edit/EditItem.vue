@@ -1,6 +1,10 @@
 <template>
   <div class="edit-item-root" ref="refItem">
-    <label class="radio">
+    <div v-if="showAdd" class="add" @click="onClickSpan">
+      <div class="line line-x" />
+      <div class="line line-y" />
+    </div>
+    <label v-else class="radio">
       <input type="checkbox" v-model="cacheData.done">
       <div class="checkmark" />
     </label>
@@ -20,14 +24,14 @@
         <div v-if="showExtra" class="other-info">
           <todo-date-picker v-model="cacheData.date" />
           <todo-time-picker class="label-right" v-model="cacheData.timer"
-                            :style="`display: ${date ? 'block' : 'none'} `" />
+                            :style="`display: ${cacheData.date ? 'block' : 'none'} `" />
           <div class="label-layout label label-right">#</div>
-          <div class="label-layout flag label-right" @click="cacheData.sFlag = !cacheData.isFlag">
+          <div class="label-layout flag label-right" @click="cacheData.isFlag = !cacheData.isFlag">
             <img :src="`src/assets/svg/ic_flag${isFlag ? '_selected' : ''}.svg`" alt="">
           </div>
         </div>
       </el-collapse-transition>
-      <template v-if="!showExtra">
+      <template v-if="!showExtra && (extraTypeName || extraTime)">
         <div class="extra_content">
           <span v-if="extraTypeName">{{ extraTypeName }}</span>
           <span v-if="extraTime" :class="extraContentClass" @click.stop="onClickSpan">{{ extraTime }}</span>
@@ -76,6 +80,13 @@ const props = defineProps({
   typeName: {
     type: String,
     default: '',
+  },
+  addInfo: {
+    type: Object,
+  },
+  showAdd: {
+    type: Boolean,
+    default: false,
   }
 })
 const emit = defineEmits([
@@ -86,21 +97,40 @@ const emit = defineEmits([
   'update:isFlag',
   'update:done',
   'update:showExtra',
-  'itemChange'
+  'update:addInfo',
+  'itemChange',
 ])
 
 function defineAttr(key, notifyChange = true) {
   return defineAttrFromProps(props, emit, key, notifyChange ? 'itemChange' : null)
 }
 
+// const name = defineAttr('name')
+// const note = defineAttr('note')
+// const date = defineAttr('date')
+// const timer = defineAttr('timer')
+// const isFlag = defineAttr('isFlag')
+// const isDone = defineAttr('done')
+
 const cacheData = reactive({
-  name: props.name,
-  note: props.note,
+  name: props.addInfo ? props.addInfo.name : props.name,
+  note: props.addInfo ? props.addInfo.note : props.note,
   date: props.date,
-  timer: props.timer,
-  isFlag: props.isFlag,
-  done: props.done
+  timer: props.addInfo ? props.addInfo.timer : props.timer,
+  isFlag: props.addInfo ? props.addInfo.isFlag : props.isFlag,
+  done: props.addInfo ? props.addInfo.done : props.done,
 })
+
+function watchProps(key) {
+  watch(() => props[key], (value) => {
+    cacheData[key] = value
+  })
+}
+watchProps('name')
+watchProps('note')
+watchProps('date')
+watchProps('isFlag')
+watchProps('done')
 
 watch(() => cacheData.done, (done) => {
   if (!showExtra.value) {
@@ -175,6 +205,7 @@ const extraContentClass = computed(() => {
 })
 
 function onClickSpan() {
+  console.log('----c', showExtra.value)
   showExtra.value = true
 }
 
@@ -195,6 +226,37 @@ defineExpose({
 <style scoped lang="scss">
 .edit-item-root {
   display: flex;
+
+  .add {
+    margin: 7px 16px 0;
+    position: relative;
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background-color: var(--todo-gray3);
+
+    .line {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      background-color: white;
+
+      &.line-x {
+        width: 10px;
+        height: 2px;
+        margin-left: -5px;
+        margin-top: -1px;
+      }
+
+      &.line-y {
+        width: 2px;
+        height: 10px;
+        margin-left: -1px;
+        margin-top: -5px;
+      }
+    }
+  }
 
   .radio {
     margin: 7px 16px 0;

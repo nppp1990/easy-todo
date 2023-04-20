@@ -9,16 +9,24 @@ import TitleLayout from "@/components/edit/TitleLayout.vue";
 import { useCurrentTypeStore } from "@/store/currentType";
 import { computed, ref } from "vue";
 import EditLayout from "@/components/edit/EditLayout.vue";
-import { getTodoCount, TYPE_TODAY_ID } from "@/utils/typeUtils";
+import { getTodoCount, TYPE_ALL_ID, TYPE_PLAN_ID, TYPE_TODAY_ID } from "@/utils/typeUtils";
 
 const currentTypeStore = useCurrentTypeStore()
 const currentType = computed(() => {
   const { name: title, colorIndex } = currentTypeStore.item
   let count
-  if (currentTypeStore.item.id === TYPE_TODAY_ID) {
-    count = currentTypeStore.countInfo.todayCount
-  } else {
-    count = getTodoCount(currentTypeStore.item)
+  switch (currentTypeStore.item.id) {
+    case TYPE_TODAY_ID:
+      count = currentTypeStore.countInfo.todayCount
+      break
+    case TYPE_PLAN_ID:
+      count = currentTypeStore.countInfo.planCount
+      break
+    case TYPE_ALL_ID:
+      count = currentTypeStore.countInfo.allCount
+      break
+    default:
+      count = getTodoCount(currentTypeStore.item)
   }
   return { title, count, colorIndex }
 })
