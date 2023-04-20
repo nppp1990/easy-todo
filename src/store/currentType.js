@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { computed, reactive, ref } from "vue";
-import { getDocList, getTypeItemById, TODO_TYPE_ALL, TODO_TYPE_TODAY, TodoDoc, TYPE_ALL_ID, TYPE_TODAY_ID } from "@/utils/typeUtils";
+import { getDocList, getTypeItemById, TODO_TYPE_TODAY, TodoDoc, TYPE_ALL_ID, TYPE_TODAY_ID } from "@/utils/typeUtils";
 import { isBeforeToday } from "@/utils/timeUtils";
 import { delDoc } from "@/storage/type";
 

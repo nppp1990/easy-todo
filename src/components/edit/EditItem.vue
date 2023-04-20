@@ -205,7 +205,6 @@ const extraContentClass = computed(() => {
 })
 
 function onClickSpan() {
-  console.log('----c', showExtra.value)
   showExtra.value = true
 }
 
@@ -235,6 +234,10 @@ defineExpose({
     height: 18px;
     border-radius: 50%;
     background-color: var(--todo-gray3);
+
+    &:active {
+      background-color: #9b9b9b;
+    }
 
     .line {
       position: absolute;

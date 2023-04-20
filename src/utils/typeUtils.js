@@ -123,7 +123,6 @@ export function generateSortId(list, preId) {
     }
     return 0
   })
-  console.log('----ids', ids, preId)
   let preIndex = ids.indexOf(preId)
   let nextId = ids[preIndex + 1]
   if (!nextId) {

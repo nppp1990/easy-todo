@@ -24,7 +24,7 @@
                      v-model:is-flag="item.isFlag"
                      v-model:done="item.done"
                      v-model:show-extra="item.showExtra"
-                     @update:show-extra="collapseChanged(item, index)"/>
+                     @update:show-extra="collapseChanged(item, index)" />
           <edit-item v-else
                      :type-name="getTypeName(item)"
                      v-model:name="item.name"
@@ -47,7 +47,7 @@
 </template>
 <script setup>
 import EditItem from "@/components/edit/EditItem.vue";
-import { computed, inject, nextTick, reactive, ref } from "vue";
+import { computed, inject, nextTick, reactive, ref, watch } from "vue";
 import { ALL_TYPE_FOOTER, ALL_TYPE_LIST, useCurrentTypeStore } from "@/store/currentType";
 import { delDoc, saveDoc } from "@/storage/type";
 import { createTodoDoc } from "@/service";
@@ -76,10 +76,20 @@ const rootClass = reactive({
 
 let filterFn = undefined
 let sortCompareFn = undefined
+let stopWatchTypeList = null
 
 function initList(type) {
   currentTypeId = type.id
+  if (stopWatchTypeList) {
+    stopWatchTypeList()
+    stopWatchTypeList = null
+  }
   if (type.id === TYPE_TODAY_ID) {
+    stopWatchTypeList = watch(() => currentTypeStore.allTodoTypeList.map(item => item.id), () => {
+      todoList.value = currentTypeStore.getTodayList()
+      currentShowIndex = -1
+      updateSortList()
+    })
     sortCompareFn = timeSortCompare
     filterFn = item => item.showExtra || (!item.done && item.date && isBeforeToday(item.date))
     todoList.value = currentTypeStore.getTodayList()
@@ -89,10 +99,14 @@ function initList(type) {
   } else if (type.id === TYPE_PLAN_ID) {
     console.log('----todo')
   } else if (type.id === TYPE_ALL_ID) {
+    stopWatchTypeList = watch(() => currentTypeStore.allTodoTypeList.map(item => item.id), () => {
+      todoList.value = currentTypeStore.getAllList()
+      currentShowIndex = -1
+      updateSortList()
+    })
     sortCompareFn = allSortCompare
-    filterFn = null
+    filterFn = item => showDone.value || !item.done
     todoList.value = currentTypeStore.getAllList()
-    console.log('----all')
   } else {
     sortCompareFn = idSortCompare
     filterFn = item => showDone.value || !item.done
@@ -194,12 +208,10 @@ function handleLastItem(lastIndex = currentShowIndex, next) {
         deleteTodo(currentItem)
       }
     } else if (currentItem.saved) {
-      console.log('----saved')
       currentTypeStore.toggleDoneStatus(currentItem)
       updateSortList()
       saveDoc(currentItem)
     } else {
-      console.log('----save', currentItem.name)
       // 保存新建的todo
       saveNewTodo(currentItem, lastIndex > 0 ? showList.value[lastIndex - 1].sortId : null)
     }
@@ -348,19 +360,17 @@ function saveNewTodo(todoItem, preSortId) {
     const actualTodoList = currentTypeStore.idTodoMap.get(todoItem.typeId)
     sortId = generateLastId(actualTodoList)
   } else if (isAllType()) {
-    console.log('----tid', todoItem.typeId)
     const actualTodoList = currentTypeStore.idTodoMap.get(todoItem.typeId)
     if (todoItem.sortInfo.type === ALL_TYPE_FOOTER) {
       // 如果是footer状态、则在actualTodoList最后加newTodo
       let footIndex = todoList.value.indexOf(todoItem)
       sortId = generateLastId(actualTodoList)
       let footItem = todoItem
-      todoItem = createTodoDoc(todoItem.typeId, {...todoItem})
+      todoItem = createTodoDoc(todoItem.typeId, { ...todoItem })
       todoItem['sortInfo'] = {
         typeIndex: footItem.sortInfo.typeIndex,
         type: ALL_TYPE_LIST
       }
-      console.log('-----e', todoItem)
       // 清空footer
       Object.assign(footItem, new TodoDoc(-1, footItem.typeId))
       todoList.value.splice(footIndex - 1, 0, todoItem)
@@ -370,8 +380,6 @@ function saveNewTodo(todoItem, preSortId) {
   } else {
     sortId = generateSortId(todoList.value, preSortId)
   }
-  console.log('----sid', sortId)
-
   todoItem.setSortId(sortId)
   todoItem.saved = true
   updateSortList()
