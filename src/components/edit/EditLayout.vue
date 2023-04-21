@@ -13,8 +13,9 @@
       </div>
       <div class="divider flex-shrink0" />
       <TransitionGroup name="list">
-        <template v-for="(item, index) in showList" :key="getAllListKey(item)">
-          <h3 class="list-header" :style="`color: ${TYPE_COLOR_LIST[item.colorIndex]}`" v-if="item.sortInfo && item.sortInfo.type === 1">{{ item.name }}</h3>
+        <template v-for="(item, index) in showList" :key="getTodoListKey(item)">
+          <h3 class="list-header" :style="`color: ${TYPE_COLOR_LIST[item.colorIndex]}`" v-if="item.sortInfo && item.sortInfo.type === 1">
+            {{ item.name || getTodoListTitle(item.sortInfo.date) }}</h3>
           <edit-item v-else-if="item.sortInfo && item.sortInfo.type === 3"
                      :show-add="true"
                      v-model:name="item.name"
@@ -48,7 +49,7 @@
 <script setup>
 import EditItem from "@/components/edit/EditItem.vue";
 import { computed, inject, nextTick, reactive, ref, watch } from "vue";
-import { ALL_TYPE_FOOTER, ALL_TYPE_LIST, useCurrentTypeStore } from "@/store/currentType";
+import { LIST_TYPE_FOOTER, LIST_TYPE_ITEM, useCurrentTypeStore } from "@/store/currentType";
 import { delDoc, saveDoc } from "@/storage/type";
 import { createTodoDoc } from "@/service";
 import {
@@ -60,11 +61,11 @@ import {
   TYPE_TODAY_ID,
   TYPE_PLAN_ID,
   allSortCompare,
-  getAllListKey, TodoDoc
+  getTodoListKey, TodoDoc, planSortCompare, getTodoListTitle, diffTodoItem
 } from "@/utils/typeUtils";
 import { TYPE_COLOR_LIST } from "@/components/menu/menuConstants";
 import FeedbackDialog from "@/components/common/FeedbackDialog.vue";
-import { getTodayStr, isBeforeToday } from "@/utils/timeUtils";
+import { getTodayStr, isBeforeToday, isToday } from "@/utils/timeUtils";
 import { INJECTION_KEY_MENU_LAYOUT } from "@/utils/constant";
 
 const todoList = ref([])
@@ -84,44 +85,54 @@ function initList(type) {
     stopWatchTypeList()
     stopWatchTypeList = null
   }
-  if (type.id === TYPE_TODAY_ID) {
+  if (isOtherType()) {
+    // 监听typeList的变化
     stopWatchTypeList = watch(() => currentTypeStore.allTodoTypeList.map(item => item.id), () => {
-      todoList.value = currentTypeStore.getTodayList()
-      currentShowIndex = -1
       updateSortList()
+      currentShowIndex = -1
     })
-    sortCompareFn = timeSortCompare
-    filterFn = item => item.showExtra || (!item.done && item.date && isBeforeToday(item.date))
-    todoList.value = currentTypeStore.getTodayList()
+  }
+  if (isTodayType()) {
     rootClass.is_header = false
     rootClass.no_header = true
-    updateSortList()
-  } else if (type.id === TYPE_PLAN_ID) {
-    console.log('----todo')
-  } else if (type.id === TYPE_ALL_ID) {
-    stopWatchTypeList = watch(() => currentTypeStore.allTodoTypeList.map(item => item.id), () => {
-      todoList.value = currentTypeStore.getAllList()
-      currentShowIndex = -1
-      updateSortList()
-    })
-    sortCompareFn = allSortCompare
-    filterFn = item => showDone.value || !item.done
-    todoList.value = currentTypeStore.getAllList()
   } else {
-    sortCompareFn = idSortCompare
-    filterFn = item => showDone.value || !item.done
-    todoList.value = currentTypeStore.allTodoMap.get(type)
     rootClass.is_header = true
     rootClass.no_header = false
-    updateSortList()
     nextTick(() => {
       refRoot.value.scrollTo({ top: 41 })
     })
   }
+
+  if (type.id === TYPE_TODAY_ID) {
+    sortCompareFn = timeSortCompare
+    filterFn = item => item.showExtra || (!item.done && item.date && isBeforeToday(item.date))
+  } else if (type.id === TYPE_PLAN_ID) {
+    sortCompareFn = planSortCompare
+    filterFn = item => showDone.value || !item.done
+  } else if (type.id === TYPE_ALL_ID) {
+    sortCompareFn = allSortCompare
+    filterFn = item => showDone.value || !item.done
+  } else {
+    sortCompareFn = idSortCompare
+    filterFn = item => showDone.value || !item.done
+  }
+  updateSortList(true, type, type.id)
   currentShowIndex = -1
 }
 
-function updateSortList() {
+function updateSortList(updateTodoList = false, type = null, typeId = currentTypeId) {
+  console.log('----updateSortList', updateTodoList)
+  if (updateTodoList) {
+    if (typeId === TYPE_TODAY_ID) {
+      todoList.value = currentTypeStore.getTodayList()
+    } else if (typeId === TYPE_ALL_ID) {
+      todoList.value = currentTypeStore.getAllList()
+    } else if (typeId === TYPE_PLAN_ID) {
+      todoList.value = currentTypeStore.getPlanList()
+    } else {
+      todoList.value = currentTypeStore.allTodoMap.get(type)
+    }
+  }
   // sort会改变todoList所以会改变showList
   if (sortCompareFn) {
     todoList.value.sort(sortCompareFn)
@@ -179,7 +190,7 @@ function collapseChanged(item, index) {
 }
 
 function getTypeName(item) {
-  if (isTodayType() || currentTypeId === TYPE_PLAN_ID) {
+  if ((isTodayType() || isPlanType()) && item.typeId) {
     return currentTypeStore.typeMap.get(item.typeId).name
   }
   return ''
@@ -198,19 +209,34 @@ function handleLastItem(lastIndex = currentShowIndex, next) {
   console.log('----handleLastItem', lastIndex)
   const currentItem = showList.value[lastIndex]
   currentItem.showExtra = false
+  let oldData = { ...currentItem }
   nextTick(() => {
     if (currentItem.name === '') {
-      if (isAllType() && currentItem.sortInfo.type === ALL_TYPE_FOOTER) {
+      if (currentItem.sortInfo && currentItem.sortInfo.type === LIST_TYPE_FOOTER) {
         // 收起并清空数据
         Object.assign(currentItem, new TodoDoc(-1, currentItem.typeId))
+        if (isPlanType()) {
+          currentItem.date = currentItem.sortInfo.date
+        }
       } else {
         // name为空、直接删除即可
         deleteTodo(currentItem)
       }
     } else if (currentItem.saved) {
-      currentTypeStore.toggleDoneStatus(currentItem)
-      updateSortList()
-      saveDoc(currentItem)
+      const changedData = diffTodoItem(oldData, currentItem)
+      console.log('----changed', changedData)
+      if (changedData) {
+        if (changedData.done) {
+          currentTypeStore.toggleDoneStatus(currentItem)
+        }
+        if (isPlanType() && changedData.date) {
+          // plan列表太麻烦，暴力的更新todoList todo 不知道这会对渲染性能有影响么
+          updateSortList(true)
+        } else {
+          updateSortList()
+        }
+        saveDoc(currentItem)
+      }
     } else {
       // 保存新建的todo
       saveNewTodo(currentItem, lastIndex > 0 ? showList.value[lastIndex - 1].sortId : null)
@@ -231,6 +257,10 @@ function isAllType() {
   return currentTypeId === TYPE_ALL_ID
 }
 
+function isPlanType() {
+  return currentTypeId === TYPE_PLAN_ID
+}
+
 function isOtherType() {
   return currentTypeId === TYPE_TODAY_ID || currentTypeId === TYPE_PLAN_ID || currentTypeId === TYPE_ALL_ID
 }
@@ -245,12 +275,15 @@ function createItem(preIndex) {
   if (preIndex === undefined) {
     if (isAllType()) {
       // 自动插入的位置为第一个type的最后
-      for (let i = 0; i < todoList.value.length; i++) {
-        if (todoList.value[i].sortInfo.type === ALL_TYPE_FOOTER) {
-          currentShowIndex = i
-          break
-        }
-      }
+      currentShowIndex = showList.value.findIndex(item => item.sortInfo.type === LIST_TYPE_FOOTER)
+      nextTick(() => {
+        // 为了展示动画，延后把showExtra改变
+        showList.value[currentShowIndex].showExtra = true
+      })
+      return
+    } else if (isPlanType()) {
+      // 自动插入的位置为今天的最后、并且type属于typeList[0]
+      currentShowIndex = showList.value.findIndex(item => item.sortInfo.type === LIST_TYPE_FOOTER && isToday(item.sortInfo.date))
       nextTick(() => {
         // 为了展示动画，延后把showExtra改变
         showList.value[currentShowIndex].showExtra = true
@@ -278,12 +311,20 @@ function createItem(preIndex) {
     // 全部列表插入sortInfo字段、用来排序
     todoItem['sortInfo'] = {
       typeIndex: showList.value[insertIndex - 1].sortInfo.typeIndex,
-      type: ALL_TYPE_LIST
+      type: LIST_TYPE_ITEM
+    }
+  } else if (isPlanType()) {
+    todoItem = createTodoDoc(currentTypeStore.allTodoTypeList[0].id)
+    let preShowItem = showList.value[insertIndex - 1]
+    todoItem.date = preShowItem.date || preShowItem.sortInfo.date
+    todoItem['sortInfo'] = {
+      type: LIST_TYPE_ITEM
     }
   } else {
     todoItem = createTodoDoc(currentTypeId)
   }
-  // 更新todoList、不调用updateSortList
+
+// 更新todoList、不调用updateSortList
   todoList.value.splice(insertIndex, 0, todoItem)
   nextTick(() => {
     // 为了展示动画，延后把showExtra改变
@@ -361,7 +402,7 @@ function saveNewTodo(todoItem, preSortId) {
     sortId = generateLastId(actualTodoList)
   } else if (isAllType()) {
     const actualTodoList = currentTypeStore.idTodoMap.get(todoItem.typeId)
-    if (todoItem.sortInfo.type === ALL_TYPE_FOOTER) {
+    if (todoItem.sortInfo.type === LIST_TYPE_FOOTER) {
       // 如果是footer状态、则在actualTodoList最后加newTodo
       let footIndex = todoList.value.indexOf(todoItem)
       sortId = generateLastId(actualTodoList)
@@ -369,7 +410,7 @@ function saveNewTodo(todoItem, preSortId) {
       todoItem = createTodoDoc(todoItem.typeId, { ...todoItem })
       todoItem['sortInfo'] = {
         typeIndex: footItem.sortInfo.typeIndex,
-        type: ALL_TYPE_LIST
+        type: LIST_TYPE_ITEM
       }
       // 清空footer
       Object.assign(footItem, new TodoDoc(-1, footItem.typeId))
@@ -377,16 +418,23 @@ function saveNewTodo(todoItem, preSortId) {
     } else {
       sortId = generateSortId(actualTodoList, preSortId)
     }
+  } else if (isPlanType()) {
+    if (todoItem.sortInfo.type === LIST_TYPE_FOOTER) {
+      todoItem = createTodoDoc(currentTypeStore.allTodoTypeList[0].id, { ...todoItem })
+    }
+    const actualTodoList = currentTypeStore.idTodoMap.get(todoItem.typeId)
+    sortId = generateLastId(actualTodoList)
+    // 因为plan是要再次获取todoList的，所以就不操作todoList了
   } else {
     sortId = generateSortId(todoList.value, preSortId)
   }
   todoItem.setSortId(sortId)
   todoItem.saved = true
-  updateSortList()
   // 创建的todo持久化
   saveDoc(todoItem)
   // 更新type的idList
   currentTypeStore.addNewItem(todoItem)
+  updateSortList(isPlanType())
 }
 
 function deleteTodo(todoItem) {

@@ -1,5 +1,6 @@
 import { getDocById } from "@/storage/type";
-import { getTime } from "@/utils/timeUtils";
+import { getDayOfWeek, getSpecialDateStr, getTime } from "@/utils/timeUtils";
+import { LIST_TYPE_HEADER, LIST_TYPE_ITEM } from "@/store/currentType";
 
 export const TYPE_TODAY_ID = -100
 export const TYPE_PLAN_ID = -200
@@ -150,17 +151,44 @@ export function allSortCompare(item1, item2) {
   }
 }
 
-export function getAllListKey(item) {
+export function planSortCompare(item1, item2) {
+  let date1 = item1.date || item1.sortInfo.date
+  let date2 = item2.date || item2.sortInfo.date
+  if (date1 < date2) {
+    return -1
+  }
+  if (date1 > date2) {
+    return 1
+  }
+  if (item1.sortInfo.type < item2.sortInfo.type) {
+    return -1
+  }
+  if (item1.sortInfo.type > item2.sortInfo.type) {
+    return 1
+  }
+  return timeSortCompare(item1, item2)
+}
+
+export function getTodoListTitle(dateStr) {
+  const specialDateStr = getSpecialDateStr(dateStr)
+  if (specialDateStr) {
+    return specialDateStr
+  }
+  return dateStr + ' ' + getDayOfWeek(dateStr)
+}
+
+export function getTodoListKey(item) {
   const { sortInfo } = item
   if (!sortInfo) {
     return item.id
   }
-  if (sortInfo.type === 1) {
-    return 'header_' + item.id
-  } else if (sortInfo.type === 2) {
+  if (sortInfo.type === LIST_TYPE_HEADER) {
+    // id不可能为0
+    return 'header_' + (item.id || item.sortInfo.date)
+  } else if (sortInfo.type === LIST_TYPE_ITEM) {
     return item.id
   } else {
-    return 'footer_' + item.sortInfo.typeId
+    return 'footer_' + (item.sortInfo.typeId || item.sortInfo.date)
   }
 }
 
@@ -187,4 +215,26 @@ export function idSortCompare(item1, item2) {
     return -1
   }
   return 1
+}
+
+//   'update:name',
+//   'update:note',
+//   'update:date',
+//   'update:timer',
+//   'update:isFlag',
+//   'update:done',
+const keys = ['name', 'note', 'date', 'timer', 'isFlag', 'done']
+
+export function diffTodoItem(oldItem, newItem) {
+  let changedData = null
+  for (const key of keys) {
+    if (oldItem[key] === newItem[key]) {
+      continue
+    }
+    if (!changedData) {
+      changedData = {}
+    }
+    changedData[key] = true
+  }
+  return changedData
 }

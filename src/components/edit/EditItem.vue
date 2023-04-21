@@ -31,7 +31,7 @@
           </div>
         </div>
       </el-collapse-transition>
-      <template v-if="!showExtra && (extraTypeName || extraTime)">
+      <template v-if="!showExtra && (extraTypeName || extraTime) && !showAdd">
         <div class="extra_content">
           <span v-if="extraTypeName">{{ extraTypeName }}</span>
           <span v-if="extraTime" :class="extraContentClass" @click.stop="onClickSpan">{{ extraTime }}</span>
@@ -126,6 +126,7 @@ function watchProps(key) {
     cacheData[key] = value
   })
 }
+
 watchProps('name')
 watchProps('note')
 watchProps('date')
@@ -147,6 +148,7 @@ watch(() => cacheData.done, (done) => {
 const refNameInput = ref(null)
 const refNoteInput = ref(null)
 const showExtra = defineAttr('showExtra', false)
+let changedData = null
 
 watch(() => props.showExtra, (show) => {
   if (show) {
@@ -155,10 +157,15 @@ watch(() => props.showExtra, (show) => {
       refNameInput.value.focus()
     }
   } else {
+    changedData = null
     for (const key in cacheData) {
       if (props[key] === cacheData[key]) {
         continue
       }
+      if (!changedData) {
+        changedData = {}
+      }
+      changedData[key] = true
       emit('update:' + key, cacheData[key])
     }
   }
@@ -217,8 +224,11 @@ function onNameInputEnter(ev) {
 
 const refItem = ref(null)
 defineExpose({
-  getItemElement: function() {
+  getItemElement() {
     return refItem.value
+  },
+  getChangedData() {
+    return changedData
   }
 })
 </script>
