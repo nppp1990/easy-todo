@@ -34,11 +34,11 @@ const colorList = TYPE_COLOR_LIST
   position: relative;
 
   .add {
-    width: 20px;
-    height: 20px;
+    width: 26px;
+    height: 26px;
     position: absolute;
     top: 16px;
-    right: 14px;
+    right: 12px;
     border-radius: 6px;
 
     &:hover {

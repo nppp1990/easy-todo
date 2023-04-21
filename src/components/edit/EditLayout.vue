@@ -12,7 +12,7 @@
                          @on-sure="removeDoneList" />
       </div>
       <div class="divider flex-shrink0" />
-      <TransitionGroup name="list">
+      <TransitionGroup :name="listTransitionName">
         <template v-for="(item, index) in showList" :key="getTodoListKey(item)">
           <h3 class="list-header" :style="`color: ${TYPE_COLOR_LIST[item.colorIndex]}`" v-if="item.sortInfo && item.sortInfo.type === 1">
             {{ item.name || getTodoListTitle(item.sortInfo.date) }}</h3>
@@ -74,10 +74,12 @@ const rootClass = reactive({
   'is_header': true,
   'no_header': false,
 })
+const listTransitionName = ref('list')
 
 let filterFn = undefined
 let sortCompareFn = undefined
 let stopWatchTypeList = null
+
 
 function initList(type) {
   currentTypeId = type.id
@@ -118,6 +120,10 @@ function initList(type) {
   }
   updateSortList(true, type, type.id)
   currentShowIndex = -1
+  listTransitionName.value = ''
+  nextTick(()=>{
+    listTransitionName.value = 'list'
+  })
 }
 
 function updateSortList(updateTodoList = false, type = null, typeId = currentTypeId) {
