@@ -5,6 +5,7 @@ import { LIST_TYPE_HEADER, LIST_TYPE_ITEM } from "@/store/currentType";
 export const TYPE_TODAY_ID = -100
 export const TYPE_PLAN_ID = -200
 export const TYPE_ALL_ID = -300
+export const TYPE_SEARCH_ID = -400
 
 export class TodoType {
   constructor(id, name, colorIndex, svgIndex = -1) {
@@ -111,7 +112,6 @@ export function generateLastId(list) {
 
 // 保证插入的id满足pre<id<next
 export function generateSortId(list, preId) {
-  console.log('----preId', list, preId)
   if (preId === undefined || preId === null) {
     return 1
   }

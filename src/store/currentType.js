@@ -1,6 +1,16 @@
 import { defineStore } from "pinia";
 import { computed, reactive, ref } from "vue";
-import { getDocList, getTypeItemById, TODO_TYPE_TODAY, TodoDoc, TYPE_ALL_ID, TYPE_PLAN_ID, TYPE_TODAY_ID } from "@/utils/typeUtils";
+import {
+  getDocList,
+  getTypeItemById,
+  TODO_TYPE_ALL,
+  TODO_TYPE_TODAY,
+  TodoDoc,
+  TYPE_ALL_ID,
+  TYPE_PLAN_ID,
+  TYPE_SEARCH_ID,
+  TYPE_TODAY_ID
+} from "@/utils/typeUtils";
 import { getTodayStr, isBeforeToday, isToday } from "@/utils/timeUtils";
 import { delDoc } from "@/storage/type";
 
@@ -156,6 +166,31 @@ export const useCurrentTypeStore = defineStore('currentType', () => {
       return list
     }
 
+    const getSearchList = (key) => {
+      let list = []
+      let typeIndex = 0
+      for (const typeItem of allTodoTypeList.value) {
+        const todoList = allTodoMap.value.get(typeItem)
+        let searchList = todoList.filter(item => (item.name && item.name.indexOf(key) > -1) || (item.note && item.note.indexOf(key) > -1))
+        if (searchList.length > 0) {
+          typeItem['sortInfo'] = {
+            typeIndex,
+            type: LIST_TYPE_HEADER,
+          }
+          searchList.forEach(item => {
+            item['sortInfo'] = {
+              typeIndex,
+              type: LIST_TYPE_ITEM
+            }
+          })
+          list.push(typeItem)
+          list.push(...searchList)
+        }
+        typeIndex++
+      }
+      return list
+    }
+
     const addType = (type) => {
       allTodoMap.value.set(type, [])
     }
@@ -175,8 +210,7 @@ export const useCurrentTypeStore = defineStore('currentType', () => {
         currentTypeId.value = typeItem.id
         item.value = typeItem
       } else {
-        // item.value = TODO_TYPE_ALL
-        item.value = TODO_TYPE_TODAY
+        item.value = TODO_TYPE_ALL
         currentTypeId.value = item.value.id
       }
     }
@@ -196,7 +230,7 @@ export const useCurrentTypeStore = defineStore('currentType', () => {
     }
     const delTodoItem = (todoItem) => {
       let type = typeMap.value.get(todoItem.typeId)
-      if (item.value.id === TYPE_TODAY_ID || item.value.id === TYPE_ALL_ID || item.value.id === TYPE_PLAN_ID) {
+      if (item.value.id === TYPE_TODAY_ID || item.value.id === TYPE_ALL_ID || item.value.id === TYPE_PLAN_ID || item.value.id === TYPE_SEARCH_ID) {
         const todoList = allTodoMap.value.get(type)
         let index = todoList.indexOf(todoItem)
         if (index >= 0) {
@@ -204,11 +238,11 @@ export const useCurrentTypeStore = defineStore('currentType', () => {
         }
       }
       let index = type.idList.indexOf(todoItem.id)
-      if (index > 0) {
+      if (index > -1) {
         type.idList.splice(index, 1)
       } else {
         index = type.doneIdList.indexOf(todoItem.id)
-        if (index > 0) {
+        if (index > -1) {
           type.doneIdList.splice(index, 1)
         }
       }
@@ -237,7 +271,7 @@ export const useCurrentTypeStore = defineStore('currentType', () => {
       allTodoMap, allTodoTypeList, idTodoMap, typeMap,
       loadData,
       deleteType, addType,
-      getTodayList, getAllList, getPlanList,
+      getTodayList, getAllList, getPlanList, getSearchList,
       countInfo,
       item, currentTypeId,
       addNewItem,

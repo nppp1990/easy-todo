@@ -1,11 +1,11 @@
 <template>
   <div class="title-layout">
-    <div class="add" @click="$emit('clickAdd')">
+    <div v-show="showAdd" class="add" @click="$emit('clickAdd')">
       <div class="line line-x" />
       <div class="line line-y" />
     </div>
-    <h1 class="title" :style="`color: ${colorList[colorIndex]}`">{{ title }}</h1>
-    <h1 class="count" :style="`color: ${colorList[colorIndex]}`">{{ count }}</h1>
+    <h1 class="title" :style="`color: ${textColor || colorList[colorIndex]}`">{{ title }}</h1>
+    <h1 v-show="showCount" class="count" :style="`color: ${textColor || colorList[colorIndex]}`">{{ count }}</h1>
   </div>
 </template>
 <script setup>
@@ -20,10 +20,21 @@ defineProps({
     type: Number,
     required: true
   },
+  textColor: {
+    type: String,
+  },
   colorIndex: {
     type: Number,
     required: true
   },
+  showAdd: {
+    type: Boolean,
+    default: true
+  },
+  showCount: {
+    type: Boolean,
+    default: true
+  }
 })
 defineEmits(['clickAdd'])
 const colorList = TYPE_COLOR_LIST

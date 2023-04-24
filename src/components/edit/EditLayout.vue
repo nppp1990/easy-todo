@@ -61,7 +61,7 @@ import {
   TYPE_TODAY_ID,
   TYPE_PLAN_ID,
   allSortCompare,
-  getTodoListKey, TodoDoc, planSortCompare, getTodoListTitle, diffTodoItem
+  getTodoListKey, TodoDoc, planSortCompare, getTodoListTitle, diffTodoItem, TYPE_SEARCH_ID
 } from "@/utils/typeUtils";
 import { TYPE_COLOR_LIST } from "@/components/menu/menuConstants";
 import FeedbackDialog from "@/components/common/FeedbackDialog.vue";
@@ -105,23 +105,29 @@ function initList(type) {
     })
   }
 
-  if (type.id === TYPE_TODAY_ID) {
-    sortCompareFn = timeSortCompare
-    filterFn = item => item.showExtra || (!item.done && item.date && isBeforeToday(item.date))
-  } else if (type.id === TYPE_PLAN_ID) {
-    sortCompareFn = planSortCompare
-    filterFn = item => showDone.value || !item.done
-  } else if (type.id === TYPE_ALL_ID) {
-    sortCompareFn = allSortCompare
-    filterFn = item => showDone.value || !item.done
-  } else {
-    sortCompareFn = idSortCompare
-    filterFn = item => showDone.value || !item.done
+  switch (type.id) {
+    case TYPE_TODAY_ID:
+      sortCompareFn = timeSortCompare
+      filterFn = item => item.showExtra || (!item.done && item.date && isBeforeToday(item.date))
+      break
+    case TYPE_PLAN_ID:
+      sortCompareFn = planSortCompare
+      filterFn = item => showDone.value || !item.done
+      break
+    case TYPE_ALL_ID:
+    case TYPE_SEARCH_ID:
+      sortCompareFn = allSortCompare
+      filterFn = item => showDone.value || !item.done
+      break
+    default:
+      sortCompareFn = idSortCompare
+      filterFn = item => showDone.value || !item.done
   }
   updateSortList(true, type, type.id)
   currentShowIndex = -1
+  // type切换时不显示list动画
   listTransitionName.value = ''
-  nextTick(()=>{
+  nextTick(() => {
     listTransitionName.value = 'list'
   })
 }
@@ -135,6 +141,9 @@ function updateSortList(updateTodoList = false, type = null, typeId = currentTyp
       todoList.value = currentTypeStore.getAllList()
     } else if (typeId === TYPE_PLAN_ID) {
       todoList.value = currentTypeStore.getPlanList()
+    } else if (typeId === TYPE_SEARCH_ID) {
+      // 这里type不可能为空
+      todoList.value = currentTypeStore.getSearchList(type.name)
     } else {
       todoList.value = currentTypeStore.allTodoMap.get(type)
     }
@@ -156,10 +165,9 @@ const currentTypeStore = useCurrentTypeStore()
 let currentTypeId = ''
 let currentShowIndex = -1
 
-currentTypeStore.$subscribe((mutation, state) => {
-  if (currentTypeId !== state.item.id) {
-    initList(state.item)
-  }
+
+watch(() => currentTypeStore.item, (item) => {
+  initList(item)
 })
 
 function onDoneStatusChanged(item) {
@@ -267,11 +275,22 @@ function isPlanType() {
   return currentTypeId === TYPE_PLAN_ID
 }
 
+function isSearchType() {
+  return currentTypeId === TYPE_SEARCH_ID
+}
+
 function isOtherType() {
-  return currentTypeId === TYPE_TODAY_ID || currentTypeId === TYPE_PLAN_ID || currentTypeId === TYPE_ALL_ID
+  return currentTypeId === TYPE_TODAY_ID
+    || currentTypeId === TYPE_PLAN_ID
+    || currentTypeId === TYPE_ALL_ID
+    || currentTypeId === TYPE_SEARCH_ID
 }
 
 function createItem(preIndex) {
+  if (isSearchType()) {
+    // 搜索列表：不创建新item
+    return
+  }
   let todoItem
   if (currentTypeStore.allTodoTypeList.length === 0) {
     showNoTypeDialog.value = true

@@ -1,7 +1,7 @@
 <template>
   <div class="menu-layout">
     <div class="input-wrapper">
-      <input type="text" placeholder="搜索" v-model="searchText">
+      <input type="text" placeholder="搜索" v-model="searchText" @keydown.enter="onSearchEnter">
       <img src="src/assets/svg/ic_search.svg" alt="" class="input-search">
       <div class="input-close-wrapper" v-show="searchText.length > 0" @click="searchText=''">
         <img src="src/assets/svg/ic_search_close.svg" alt="" class="input-close">
@@ -39,7 +39,7 @@ import TypeListLayout from "@/components/menu/TypeListLayout.vue";
 import TypeDialogLayout from "@/components/menu/TypeDialogLayout.vue";
 import { nextTick, ref, watch } from "vue";
 import { useTypeStore } from "@/store/type";
-import { TODO_TYPE_ALL, TODO_TYPE_TODAY, TODO_TYPE_PLAN, TYPE_ALL_ID, TYPE_TODAY_ID, TYPE_PLAN_ID } from "@/utils/typeUtils";
+import { TODO_TYPE_ALL, TODO_TYPE_TODAY, TODO_TYPE_PLAN, TYPE_ALL_ID, TYPE_TODAY_ID, TYPE_PLAN_ID, TYPE_SEARCH_ID, TodoType } from "@/utils/typeUtils";
 import { useCurrentTypeStore } from "@/store/currentType";
 
 const searchText = ref('')
@@ -78,14 +78,12 @@ const onClickCard = (type) => {
   } else {
     currentTypeStore.updateCurrentType(TODO_TYPE_ALL)
   }
-
 }
 const typeStore = useTypeStore()
 
 const onDialogClosed = (res) => {
   showTypeDialog.value = false
   if (res) {
-    console.log('----submit', res)
     if (res.id === -1) {
       typeStore.addType(res).then(typeInfo => {
         console.log('---add type', typeInfo)
@@ -94,8 +92,33 @@ const onDialogClosed = (res) => {
     } else {
       typeList.value.modifyItem(res)
     }
-  } else {
-    console.log('----close dialog')
+  }
+}
+
+let timer = null
+let lastType = null
+watch(searchText, () => {
+  if (timer) {
+    clearTimeout(timer)
+  }
+  timer = setTimeout(() => {
+    if (searchText.value) {
+      if (currentTypeStore.item.id !== TYPE_SEARCH_ID) {
+        // 记录上次的type
+        lastType = currentTypeStore.item
+      }
+      currentTypeStore.updateCurrentType(new TodoType(TYPE_SEARCH_ID, searchText.value, 0))
+    } else {
+      currentTypeStore.updateCurrentType(lastType)
+    }
+    timer = null
+  }, 500)
+})
+
+function onSearchEnter() {
+  if (!timer && currentTypeStore.item.id !== TYPE_SEARCH_ID && searchText.value) {
+    lastType = currentTypeStore.item
+    currentTypeStore.updateCurrentType(new TodoType(TYPE_SEARCH_ID, searchText.value, 0))
   }
 }
 
@@ -203,8 +226,8 @@ defineExpose({ createType: addType })
       justify-content: center;
 
       .input-close {
-        width: 12px;
-        height: 12px;
+        width: 14px;
+        height: 14px;
       }
     }
   }
