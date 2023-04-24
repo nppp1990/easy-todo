@@ -17,6 +17,7 @@ const currentType = computed(() => {
   let count
   let showAdd
   let showCount
+  let textColor
   switch (currentTypeStore.item.id) {
     case TYPE_TODAY_ID:
       count = currentTypeStore.countInfo.todayCount
@@ -32,11 +33,12 @@ const currentType = computed(() => {
       count = 0
       showAdd = false
       showCount = false
+      textColor = '#5b626a'
       break
     default:
       count = getTodoCount(currentTypeStore.item)
   }
-  return { title, count, colorIndex, showAdd, showCount }
+  return { title, count, colorIndex, showAdd, showCount, textColor }
 })
 const refEditLayout = ref(null)
 

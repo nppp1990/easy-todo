@@ -9,15 +9,17 @@
       <img src="src/assets/images/haha.jpeg" alt="">
       <h3>{{ title }}</h3>
       <span class="message">{{ message }}。</span>
-      <div style="margin-top: 16px">
-        <el-button @click="showDialog = false">{{ cancelText }}</el-button>
-        <el-button type="primary" @click="onClickSure()">{{ sureText }}</el-button>
-      </div>
+      <form style="margin-top: 16px" @submit.prevent="onClickSure()">
+        <input class="hidden-input" ref="refInput">
+        <el-button @click="showDialog = false" native-type="button">{{ cancelText }}</el-button>
+        <el-button type="primary" native-type="submit">{{ sureText }}</el-button>
+      </form>
     </div>
   </el-dialog>
 </template>
 <script setup>
 import { defineAttrFromProps } from "@/utils/vueUtils";
+import { nextTick, ref, watch } from "vue";
 
 const props = defineProps({
   show: {
@@ -48,7 +50,20 @@ const emits = defineEmits([
 ])
 
 const showDialog = defineAttrFromProps(props, emits, 'show')
+const refInput = ref(null)
+watch(showDialog, (show) => {
+  if (show) {
+    console.log('-----e')
+    setTimeout(() => {
+      refInput.value.focus()
+      console.log('----eee')
+    })
+
+  }
+})
+
 function onClickSure() {
+  console.log('----eee')
   showDialog.value = false
   emits('onSure')
 }
@@ -87,6 +102,17 @@ function onClickSure() {
     line-height: 28px;
     border-radius: 6px;
     font-size: 13px;
+  }
+
+  .hidden-input {
+    background: none;
+    border: none;
+    outline: none;
+    line-height: 0;
+    position: absolute;
+    width: 0;
+    height: 0;
+    padding: 0;
   }
 }
 </style>

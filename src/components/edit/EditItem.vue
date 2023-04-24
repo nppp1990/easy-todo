@@ -48,13 +48,6 @@ import { defineAttrFromProps } from "@/utils/vueUtils";
 import { computed, reactive, ref, watch } from "vue";
 import { getSpecialDateStr, isExpire } from "@/utils/timeUtils";
 
-[
-  { "id": 109, "typeId": 10, "name": "name1", "note": "", "date": "2023-04-20", "timer": "12:00", "isFlag": false, "done": false},
-  { "id": 110, "typeId": 10, "name": "name2", "note": "", "date": "", "timer": "12:00", "isFlag": false, "done": false},
-  { "id": 111, "typeId": 10, "name": "name3", "note": "", "date": "", "timer": "12:00", "isFlag": false, "done": false},
-  { "id": 112, "typeId": 10, "name": "name4", "note": "", "date": "2023-04-20", "timer": "12:00", "isFlag": false, "done": false},
-  { "id": 113, "typeId": 10, "name": "name5", "note": "", "date": "2023-04-20", "timer": "12:00", "isFlag": false, "done": false},
-]
 const props = defineProps({
   name: {
     type: String,
